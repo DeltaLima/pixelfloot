@@ -1,0 +1,122 @@
+#!/bin/bash
+
+IPFLOOT="151.217.15.90"
+COLOR="FFFFFF"
+PPMFILE="profile.ppm"
+HEXPPM="profile.hexppm"
+PIXLIST="profile.pixlist"
+
+
+
+declare -a PIXMAP
+declare -a LOL
+declare -a LOLPID
+
+# https://gist.github.com/nberlette/e3e303a81f2c41927bf4fe90fb89d97f
+function hex() {
+    printf "%02X%02X%02X" ${*//','/' '}
+}
+
+
+
+gen_pixmap() {
+	y=0
+	while read -r LINE
+	do
+		for x in $(seq 1 160)
+		do
+			REDindex=$((x*3-2))
+			GREENindex=$((x*3+1-2))
+			BLUEindex=$((x*3+2-2))
+			
+			REDvalue="$(echo $LINE| cut -d ' ' -f${REDindex})"
+			GREENvalue="$(echo $LINE| cut -d ' ' -f${GREENindex})"
+			BLUEvalue="$(echo $LINE| cut -d ' ' -f${BLUEindex})"
+			
+			PIXELcolor="$(hex ${REDvalue} $GREENvalue $BLUEvalue)"
+			PIXMAP[$y]="${PIXMAP[$y]} $PIXELcolor"
+			
+		done
+		echo ${PIXMAP[$y]} #>> $HEXPPM
+		y=$((y+1)) 
+		#~ for col in $LINE
+		#~ do
+			#~ case $count in
+			#~ 0) RED="$(hex $col)"
+			#~ ;;
+			#~ 1) GREEN="$(hex $col)"
+			#~ ;;
+			#~ 2) BLUE="$(hex $col)"
+			#~ ;;
+			#~ esac
+			#~ count=$((count+1))
+			#~ test $count -ge 2 && count=0
+		#~ done
+	done < "$PPMFILE"
+	
+}
+
+gen_field() {
+
+for i in  $(seq 0 160) 
+	do
+	for j in $(seq 180 330)
+	do
+		echo "PX $i $j $COLOR"
+	done
+done
+
+}
+
+draw_pixmap() {
+	y=1
+	while read -r LINE
+	do
+		for x in $(seq 1 160)
+		do
+			echo "PX $x $y $(echo $LINE | cut -d ' ' -f$x)"
+			
+		done
+		y=$((y+1)) 
+
+	done < "$HEXPPM"
+	
+}
+
+floot() {
+	for i in 1 2 3 
+	do
+	  LOL[$i]="OFFSET 1 200"
+	  LOL[$i]="${LOL[$i]}
+$(cat $PIXLIST | shuf)"
+	done
+	
+	while true
+	do
+		for i in 1 2 3 
+		do
+			if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
+			then
+				echo "${LOL[$i]}" > /dev/tcp/$IPFLOOT/1337 &
+				#echo "${LOL[$i]}" > /dev/tcp/127.0.0.1/1337 &
+				LOLPID[$i]=$!
+			fi
+		done
+	done
+}
+
+case $1 in
+
+	draw_pixmap) draw_pixmap
+	;;
+	
+	gen_pixmap) gen_pixmap
+	;;
+	
+	floot) floot
+	;;
+	*)
+		echo "lol"
+		exit 1
+		;;
+	esac
