@@ -143,9 +143,9 @@ draw_pixmap() {
 sx=0
 sy=0
 shuf_xy() {
-	echo "OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-919 -n 1)"
+	#echo "OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-919 -n 1)"
 	#echo "OFFSET $(shuf -i 0-1760 -n 1) 919"
-	#echo "OFFSET 1200 420"
+	echo "OFFSET 1200 420"
 	#echo > /dev/null
 	
 	#~ echo "OFFSET $sx $sy"
@@ -157,27 +157,32 @@ shuf_xy() {
 }
 
 floot() {
-	#~ for i in 1 2
-	#~ do
-	  #LOL[$i]="OFFSET 1 200"
-	  #LOL[$i]="OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-920 -n 1)"
-#	  LOL[$i]="$(shuf_xy)"
-	  #~ LOL[$i]="$(shuf_xy)
-#~ $(cat $PIXLIST | shuf)"
+	if [ "$FNAME" == "winketuxS" ]
+	then
+		LOL[1]="$(cat ${FNAME}1.pixlist | shuf)"
+		LOL[2]="$(cat ${FNAME}2.pixlist | shuf )"
+		LOL[3]="$(cat ${FNAME}2.pixlist | shuf )"
+		#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
+	else
+		for i in 1 2 3
+		do
+		  #LOL[$i]="OFFSET 1 200"
+		  #LOL[$i]="OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-920 -n 1)"
+	#	  LOL[$i]="$(shuf_xy)"
+		  LOL[$i]="$(shuf_xy)
+$(cat $PIXLIST | shuf)"
+		
+		if [ -z "$ALPHACOLOR" ]
+		then 
+			LOL[$i]="$(cat $PIXLIST | shuf)"
+		else
+			LOL[$i]="$(grep -v $ALPHACOLOR $PIXLIST | shuf)"
+		fi
+		
+		done
+	fi
 	
-	#~ if [ -z "$ALPHACOLOR" ]
-	#~ then 
-		#~ LOL[$i]="$(cat $PIXLIST | shuf)"
-	#~ else
-		#~ LOL[$i]="$(grep -v $ALPHACOLOR $PIXLIST | shuf)"
-	#~ fi
-	
-	#~ done
-	
-	LOL[1]="$(cat ${FNAME}1.pixlist | shuf)"
-	LOL[2]="$(cat ${FNAME}2.pixlist | shuf )"
-	LOL[3]="$(cat ${FNAME}2.pixlist | shuf )"
-	#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
+
 	
 	while true
 	do
