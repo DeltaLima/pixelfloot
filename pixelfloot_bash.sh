@@ -176,11 +176,12 @@ floot() {
 	
 	LOL[1]="$(cat ${FNAME}1.pixlist | shuf)"
 	LOL[2]="$(cat ${FNAME}2.pixlist | shuf )"
+	LOL[3]="$(cat ${FNAME}2.pixlist | shuf )"
 	#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
 	
 	while true
 	do
-		for i in 1 2
+		for i in 1 2 3
 		do
 			if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
 			then
