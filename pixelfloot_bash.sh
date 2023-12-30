@@ -6,7 +6,7 @@ PPMFILE="$2.ppm"
 HEXPPM="$2.hexppm"
 PIXLIST="$2.pixlist"
 ALPHACOLOR="$3"
-
+FNAME="$2"
 
 declare -a PIXMAP
 declare -a LOL
@@ -79,13 +79,25 @@ draw_pixmap() {
 	y=1
 	while read -r LINE
 	do
-		for x in $(seq 1 200)
+		for x in $(seq 1 80)
 		do
-			echo "please wait"
-			echo "PX $((x*2)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
-			echo "PX $((x*2+1)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
-			echo "PX $((x*2)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
-			echo "PX $((x*2+1)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST			
+			if [[ "$(echo $LINE | cut -d ' ' -f$x)" != "FF00FE" ]]
+			then
+				echo "please wait"
+				echo "PX $((x*2)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
+				echo "PX $((x*2+1)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
+				echo "PX $((x*2)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
+				echo "PX $((x*2+1)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST			
+			else
+			
+			    RAINBOWCOLOR="$(hex $((y*1)) $((y*3)) $((y*2)))"
+			
+				echo "please wait for rainbow"
+				echo "PX $((x*2)) $((y*2)) $RAINBOWCOLOR" >> $PIXLIST
+				echo "PX $((x*2+1)) $((y*2)) $RAINBOWCOLOR" >> $PIXLIST
+				echo "PX $((x*2)) $((y*2+1)) $RAINBOWCOLOR" >> $PIXLIST
+				echo "PX $((x*2+1)) $((y*2+1)) $RAINBOWCOLOR" >> $PIXLIST			
+			fi
 		done
 		y=$((y+1)) 
 
@@ -110,26 +122,30 @@ shuf_xy() {
 }
 
 floot() {
-	for i in 1 2 3 
-	do
+	#~ for i in 1 2
+	#~ do
 	  #LOL[$i]="OFFSET 1 200"
 	  #LOL[$i]="OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-920 -n 1)"
 #	  LOL[$i]="$(shuf_xy)"
 	  #~ LOL[$i]="$(shuf_xy)
 #~ $(cat $PIXLIST | shuf)"
 	
-	if [ -z "$ALPHACOLOR" ]
-	then 
-		LOL[$i]="$(cat $PIXLIST | shuf)"
-	else
-		LOL[$i]="$(grep -v $ALPHACOLOR $PIXLIST | shuf)"
-	fi
+	#~ if [ -z "$ALPHACOLOR" ]
+	#~ then 
+		#~ LOL[$i]="$(cat $PIXLIST | shuf)"
+	#~ else
+		#~ LOL[$i]="$(grep -v $ALPHACOLOR $PIXLIST | shuf)"
+	#~ fi
 	
-	done
+	#~ done
+	
+	LOL[1]="$(cat ${FNAME}1.pixlist | shuf)"
+	LOL[2]="$(cat ${FNAME}2.pixlist | shuf )"
+	#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
 	
 	while true
 	do
-		for i in 1 2 3 
+		for i in 1 2
 		do
 			if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
 			then
