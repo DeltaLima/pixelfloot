@@ -79,7 +79,7 @@ draw_pixmap() {
 	y=1
 	while read -r LINE
 	do
-		for x in $(seq 1 80)
+		for x in $(seq 1 200)
 		do
 			if [[ "$(echo $LINE | cut -d ' ' -f$x)" != "FF00FE" ]]
 			then
@@ -89,8 +89,43 @@ draw_pixmap() {
 				echo "PX $((x*2)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
 				echo "PX $((x*2+1)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST			
 			else
-			
-			    RAINBOWCOLOR="$(hex $((y*1)) $((y*3)) $((y*2)))"
+				
+				if [ "$y" -lt 40 ]
+				then
+					RAINBOWCOLOR="$(hex 0 0 255)"
+				elif [ "$y" -lt 80 ]
+				then
+					RAINBOWCOLOR="$(hex 0 255 255)"
+				elif [ "$y" -lt 120 ]
+				then
+					RAINBOWCOLOR="$(hex 0 255 0)"
+				elif [ "$y" -lt 160 ]
+				then
+					RAINBOWCOLOR="$(hex 255 255 0)"
+				else
+					RAINBOWCOLOR="$(hex 255 0 0)"
+				
+				fi
+				
+				 
+								
+				#~ if [ "$y" -lt 16 ]
+				#~ then
+					#~ RAINBOWCOLOR="$(hex 0 0 $(((y+1)*16)))"
+				#~ elif [ "$y" -lt 32 ]
+				#~ then
+					#~ RAINBOWCOLOR="$(hex 0 $(((y-16)*16)) 255)"
+				#~ elif [ "$y" -lt 48 ]
+				#~ then
+					#~ RAINBOWCOLOR="$(hex 0 $((y*16)) $((16-(y-32)*16)))"
+				#~ elif [ "$y" -lt 64 ]
+				#~ then
+					#~ RAINBOWCOLOR="$(hex $((y*16)) $((y*16)) 0)"
+				#~ else
+					#~ RAINBOWCOLOR="$(hex $((y*16)) 0 0)"
+				
+				#~ fi
+			    
 			
 				echo "please wait for rainbow"
 				echo "PX $((x*2)) $((y*2)) $RAINBOWCOLOR" >> $PIXLIST
@@ -110,7 +145,7 @@ sy=0
 shuf_xy() {
 	#echo "OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-919 -n 1)"
 	#echo "OFFSET $(shuf -i 0-1760 -n 1) 919"
-	echo "OFFSET 1000 400"
+	echo "OFFSET 1200 420"
 	#echo > /dev/null
 	
 	#~ echo "OFFSET $sx $sy"
