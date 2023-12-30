@@ -79,7 +79,7 @@ draw_pixmap() {
 	y=1
 	while read -r LINE
 	do
-		for x in $(seq 1 160)
+		for x in $(seq 1 200)
 		do
 			echo "please wait"
 			echo "PX $((x*2)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
