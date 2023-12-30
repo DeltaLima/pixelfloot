@@ -143,9 +143,9 @@ draw_pixmap() {
 sx=0
 sy=0
 shuf_xy() {
-	#echo "OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-919 -n 1)"
+	echo "OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-919 -n 1)"
 	#echo "OFFSET $(shuf -i 0-1760 -n 1) 919"
-	echo "OFFSET 1200 420"
+	#echo "OFFSET 1200 420"
 	#echo > /dev/null
 	
 	#~ echo "OFFSET $sx $sy"
