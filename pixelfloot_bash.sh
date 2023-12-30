@@ -79,7 +79,7 @@ draw_pixmap() {
 	y=1
 	while read -r LINE
 	do
-		for x in $(seq 1 200)
+		for x in $(seq 1 160)
 		do
 			if [[ "$(echo $LINE | cut -d ' ' -f$x)" != "FF00FE" ]]
 			then
@@ -90,16 +90,16 @@ draw_pixmap() {
 				echo "PX $((x*2+1)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST			
 			else
 				
-				if [ "$y" -lt 40 ]
+				if [ "$y" -lt 32 ]
 				then
 					RAINBOWCOLOR="$(hex 0 0 255)"
-				elif [ "$y" -lt 80 ]
+				elif [ "$y" -lt 64 ]
 				then
 					RAINBOWCOLOR="$(hex 0 255 255)"
-				elif [ "$y" -lt 120 ]
+				elif [ "$y" -lt 94 ]
 				then
 					RAINBOWCOLOR="$(hex 0 255 0)"
-				elif [ "$y" -lt 160 ]
+				elif [ "$y" -lt 126 ]
 				then
 					RAINBOWCOLOR="$(hex 255 255 0)"
 				else
