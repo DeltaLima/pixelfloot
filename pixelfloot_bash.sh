@@ -8,6 +8,7 @@ PIXLIST="$2.pixlist"
 ALPHACOLOR="$3"
 FNAME="$2"
 
+#test -z "$SHUFMODE" && SHUFMODE="static"
 declare -a PIXMAP
 declare -a LOL
 declare -a LOLPID
@@ -65,7 +66,7 @@ gen_pixmap() {
 
 gen_field() {
 
-for i in  $(seq 0 160) 
+for i in  $(seq 0 143) 
 	do
 	for j in $(seq 180 330)
 	do
@@ -143,10 +144,23 @@ draw_pixmap() {
 sx=0
 sy=0
 shuf_xy() {
-	echo "OFFSET $(shuf -i 1190-1210 -n 1) $(shuf -i 32-48 -n 1)"
-	#echo "OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-919 -n 1)"
+	case $SHUFMODE in
+	chaos) echo "OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-919 -n 1)"
+	;;
+	
+	shake) echo "OFFSET $(shuf -i 1190-1210 -n 1) $(shuf -i 32-48 -n 1)"
+	;;
+	
+	static) echo "OFFSET 1200 420"
+	;;
+	
+	*) echo "OFFSET 420 420" 
+	;;
+	esac
+	#
+	#
 	#echo "OFFSET $(shuf -i 0-1760 -n 1) 919"
-	#echo "OFFSET 1200 42"
+	
 	#echo > /dev/null
 	
 	#~ echo "OFFSET $sx $sy"
