@@ -249,6 +249,9 @@ case $1 in
 	;;
 
 	convertimg)
+    # convert arbeitsplatz.jpg txt: | tail -n +2  | awk '{print $1 $3}'
+    # this is probably better
+    
 		gen_pixmap
 		draw_pixmap
 	;;
