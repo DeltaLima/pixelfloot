@@ -153,6 +153,9 @@ shuf_xy() {
 	
 	static) echo "OFFSET 1200 420"
 	;;
+
+	cursor) echo "OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
+	;;
 	
 	*) echo "OFFSET 420 420" 
 	;;
