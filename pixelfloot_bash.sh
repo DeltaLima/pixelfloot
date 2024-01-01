@@ -1,7 +1,9 @@
 #!/bin/bash
 
-IPFLOOT="151.217.15.90"
+#IPFLOOT="151.217.15.90"
+IPFLOOT="192.168.254.7"
 COLOR="FFFFFF"
+FLOOTFORKS="4"
 PPMFILE="$2.ppm"
 HEXPPM="$2.hexppm"
 PIXLIST="$2.pixlist"
@@ -66,9 +68,9 @@ gen_pixmap() {
 
 gen_field() {
 
-for i in  $(seq 0 143) 
+for i in  $(seq 1 1000) 
 	do
-	for j in $(seq 180 330)
+	for j in $(seq 1 640)
 	do
 		echo "PX $i $j $COLOR"
 	done
@@ -78,17 +80,22 @@ done
 
 draw_pixmap() {
 	y=1
+	test -z $x_ppm && echo "x_ppm missing" && exit 1
 	while read -r LINE
 	do
-		for x in $(seq 1 160)
+		for x in $(seq 1 $x_ppm)
 		do
+			# when Color is FF00FE draw rainbow background
 			if [[ "$(echo $LINE | cut -d ' ' -f$x)" != "FF00FE" ]]
 			then
 				echo "please wait"
-				echo "PX $((x*2)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
-				echo "PX $((x*2+1)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
-				echo "PX $((x*2)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
-				echo "PX $((x*2+1)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST			
+				echo "PX $x $y $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
+
+				# magnify double size
+				#echo "PX $((x*2)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
+				#echo "PX $((x*2+1)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
+				#echo "PX $((x*2)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
+				#echo "PX $((x*2+1)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST			
 			else
 				
 				if [ "$y" -lt 32 ]
@@ -151,13 +158,13 @@ shuf_xy() {
 	shake) echo "OFFSET $(shuf -i 1190-1210 -n 1) $(shuf -i 32-48 -n 1)"
 	;;
 	
-	static) echo "OFFSET 1200 420"
+	static) echo "OFFSET 420 420"
 	;;
 
 	cursor) echo "OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
 	;;
 	
-	*) echo "OFFSET 420 420" 
+	*) echo "OFFSET 0 0" 
 	;;
 	esac
 	#
@@ -181,8 +188,14 @@ floot() {
 		LOL[2]="$(cat ${FNAME}2.pixlist | shuf )"
 		LOL[3]="$(cat ${FNAME}2.pixlist | shuf )"
 		#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
+	elif [ "$FNAME" == "fill" ]
+	then
+		for i in $(seq 1 $FLOOTFORKS)
+		do
+			LOL[$i]="$(gen_field)"
+		done
 	else
-		for i in 1 2 3
+		for i in $(seq 1 $FLOOTFORKS)
 		do
 		  #LOL[$i]="OFFSET 1 200"
 		  #LOL[$i]="OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-920 -n 1)"
@@ -204,7 +217,7 @@ $(cat $PIXLIST | shuf)"
 	
 	while true
 	do
-		for i in 1 2 3
+		for i in $(seq $FLOOTFORKS) 
 		do
 			if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
 			then
@@ -224,7 +237,12 @@ case $1 in
 	
 	gen_pixmap) gen_pixmap
 	;;
-	
+
+	convertimg)
+		gen_pixmap
+		draw_pixmap
+	;;
+		
 	floot) floot
 	;;
 	*)
