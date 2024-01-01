@@ -2,15 +2,15 @@
 
 #IPFLOOT="151.217.15.90"
 IPFLOOT="192.168.254.7"
-COLOR="FFFFFF"
-FLOOTFORKS="4"
-PPMFILE="$2.ppm"
-HEXPPM="$2.hexppm"
-PIXLIST="$2.pixlist"
+FLOOTPORT="1337"
+PPMFILE="images/$2.ppm"
+HEXPPM="images/$2.hexppm"
+PIXLIST="pixlists/$2.pixlist"
 ALPHACOLOR="$3"
 FNAME="$2"
 
-#test -z "$SHUFMODE" && SHUFMODE="static"
+test -z "$FLOOTFORKS" && FLOOTFORKS="4"
+
 declare -a PIXMAP
 declare -a LOL
 declare -a LOLPID
@@ -68,11 +68,15 @@ gen_pixmap() {
 
 gen_field() {
 
-for i in  $(seq 1 1000) 
+test -z $W && W=640
+test -z $H && H=480
+test -z $COLOR && COLOR="666999"
+echo "drawing $W x $H - $COLOR" >&2
+for x in  $(seq 1 $W) 
 	do
-	for j in $(seq 1 640)
+	for y in $(seq 1 $H)
 	do
-		echo "PX $i $j $COLOR"
+		echo "PX $x $y $COLOR"
 	done
 done
 
@@ -151,14 +155,19 @@ draw_pixmap() {
 sx=0
 sy=0
 shuf_xy() {
+  
 	case $SHUFMODE in
-	chaos) echo "OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-919 -n 1)"
+	chaos) test -z $H && H=640
+        test -z $W && W=480
+        echo "OFFSET $(shuf -i 0-$W -n 1) $(shuf -i 0-$H -n 1)"
 	;;
 	
-	shake) echo "OFFSET $(shuf -i 1190-1210 -n 1) $(shuf -i 32-48 -n 1)"
+	shake) test -z $H && H=1
+        test -z $W && W=1
+        echo "OFFSET $(shuf -i $W-$(($W+10)) -n 1) $(shuf -i $H-$(($H+10)) -n 1)"
 	;;
 	
-	static) echo "OFFSET 420 420"
+	static) echo "OFFSET $W $H"
 	;;
 
 	cursor) echo "OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
@@ -182,6 +191,7 @@ shuf_xy() {
 }
 
 floot() {
+	# small stupid animation, two alternating images
 	if [ "$FNAME" == "winketuxS" ]
 	then
 		LOL[1]="$(cat ${FNAME}1.pixlist | shuf)"
@@ -190,9 +200,10 @@ floot() {
 		#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
 	elif [ "$FNAME" == "fill" ]
 	then
+    LOL_org="$(gen_field)"
 		for i in $(seq 1 $FLOOTFORKS)
 		do
-			LOL[$i]="$(gen_field)"
+			LOL[$i]="$LOL_org"
 		done
 	else
 		for i in $(seq 1 $FLOOTFORKS)
@@ -200,8 +211,7 @@ floot() {
 		  #LOL[$i]="OFFSET 1 200"
 		  #LOL[$i]="OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-920 -n 1)"
 	#	  LOL[$i]="$(shuf_xy)"
-		  LOL[$i]="$(shuf_xy)
-$(cat $PIXLIST | shuf)"
+		  LOL[$i]="$(cat $PIXLIST | shuf)"
 		
 		if [ -z "$ALPHACOLOR" ]
 		then 
@@ -243,10 +253,16 @@ case $1 in
 		draw_pixmap
 	;;
 		
-	floot) floot
+	floot) if [ "$SHUFMODE" == "static" ] && ([ -z "$W" ] && [ -z "$H" ])
+         then
+           echo "please specify coords with e.g. 'W=420 H=420 SHUFMODE=static $0 floot $FNAME" >&2
+           exit 1
+         fi
+         
+         floot
 	;;
 	*)
-		echo "lol: draw_pixmap, gen_pixmap, floot"
+		echo "$0 [convertimg, draw_pixmap, floot] [FILENAME] ([alpha color])"
 		exit 1
 		;;
 	esac
