@@ -186,19 +186,18 @@ shuf_xy() {
         echo "OFFSET $(shuf -i 0-$W -n 1) $(shuf -i 0-$H -n 1)"
 	;;
 	
-	shake) test -z $H && H=1
-        test -z $W && W=1
+	shake) test -z $H && H=0
+        test -z $W && W=0
         echo "OFFSET $(shuf -i $W-$(($W+10)) -n 1) $(shuf -i $H-$(($H+10)) -n 1)"
 	;;
 	
-	static) echo "OFFSET $W $H"
-	;;
-
 	cursor) echo "OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
 	;;
-	
-	*) echo "OFFSET 0 0" 
-	;;
+
+	static|*) test -z $H && H=0
+        test -z $W && W=0
+        echo "OFFSET $W $H"
+	;;	
 	esac
 	#
 	#
