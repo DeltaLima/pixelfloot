@@ -29,3 +29,8 @@ MODE: static (env $H and $W for position)
 available env vars to configure:
 RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)
 ```
+
+Running on my Ryzen 4700G with [wellenbrecher](https://github.com/bits0rcerer/wellenbrecher) 1280x720 and three workers,
+i get around 1,5Gbit/s localhost traffic.
+
+![pixelfloot screenshot](demo/screenshot_pixelfloot.png)
