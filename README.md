@@ -1,6 +1,8 @@
 # pixelfloot
 
-an very simple and dirty pixelflut client to draw images.
+Origin: https://git.la10cy.net/DeltaLima/pixelfloot
+
+an very simple and dirty pixelflut client to draw images, written in bash.
 pixelfloot was built during the 37c3. in its actual state, its just a mess. I hope i will find time to put it in a more usable and readable format. 
 
 ## image format
