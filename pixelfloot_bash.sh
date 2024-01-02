@@ -220,7 +220,7 @@ flootworker()
 		#FLOOTSRUNNING=$((FLOOTSRUNNING+1))
     #test $FLOOTSRUNNING -le $FLOOTFORKS && 
     echo "$(shuf_xy)
-${LOL[$i]}" > /dev/tcp/$IPFLOOT/1337 
+${LOL[$i]}" > /dev/tcp/$IPFLOOT/$FLOOTPORT 
     #FLOOTSRUNNING=$((FLOOTSRUNNING-1))
 				#echo "${LOL[$i]}" > /dev/tcp/127.0.0.1/1337 &
 				
@@ -332,6 +332,7 @@ case $1 in
     echo ""
     echo "available env vars to configure:"
     echo "RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)"
+    echo "IPFLOOT(string), FLOOTPORT(string)"
     exit 1
 		;;
 	esac
