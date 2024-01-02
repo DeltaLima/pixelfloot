@@ -151,9 +151,9 @@ test -z $W && W=640
 test -z $H && H=480
 test -z $COLOR && COLOR="666999"
 echo "drawing $W x $H - $COLOR" >&2
-for x in  $(seq 1 $W) 
+for x in  $(seq 0 $W) 
 	do
-	for y in $(seq 1 $H)
+	for y in $(seq 0 $H)
 	do
 		echo "PX $x $y $COLOR"
 	done
