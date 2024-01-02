@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #IPFLOOT="151.217.15.90"
-IPFLOOT="192.168.254.7"
-FLOOTPORT="1337"
+test -z "$IPFLOOT" && IPFLOOT="127.0.0.1"
+test -z "$FLOOTPORT" && FLOOTPORT="1337"
 
 ########################################################################
 FNAME="$(echo $2 | sed -e 's/\..*$//' -e 's/^images\///')"
