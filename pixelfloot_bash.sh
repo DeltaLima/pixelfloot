@@ -12,7 +12,7 @@ HEXPPM="images/$FNAME.hexppm"
 PIXLIST="pixlists/$FNAME.pixlist"
 SHUFMODE="$3"
 
-test -z "$FLOOTFORKS" && FLOOTFORKS="4"
+test -z "$FLOOTFORKS" && FLOOTFORKS="3"
 
 declare -a PIXMAP
 declare -a LOL
