@@ -19,15 +19,12 @@ Have a look to the example .pixlist files
 
 Display image: `./pixelfloot_bash.sh floot lol`
 
-image random position: `SHUFMODE=chaos ./pixelfloot_bash.sh floot lol`
+image random position: `./pixelfloot_bash.sh floot images/lucky-cat.jpg chaos`
 
-image shake position: `SHUFMODE=shake ./pixelfloot_bash.sh floot lol`
+image shake position: `SHUFMODE=shake ./pixelfloot_bash.sh floot images/lucky-cat.jpg shake`
 
-move image with your cursor (needs `xdotool`): `SHUFMODE=cursor ./pixelfloot_bash.sh floot lol`
+move image with your cursor (needs `xdotool`): `./pixelfloot_bash.sh floot images/lucky-cat.jpg cursor`
 
-Use a color as "alpha" (remove background): `./pixelfloot_bash.sh floot lol FF00FF`
-
-
-Use the cursor image as cursor `SHUFMODE=cursor ./pixelfloot_bash.sh floot cursor FF00FF`
+Use a color as "alpha" (remove background): `ALPHACOLOR=FF00FF ./pixelfloot_bash.sh floot images/cursor.ppm cursor`
 
 

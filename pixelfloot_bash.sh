@@ -3,11 +3,14 @@
 #IPFLOOT="151.217.15.90"
 IPFLOOT="192.168.254.7"
 FLOOTPORT="1337"
-PPMFILE="images/$2.ppm"
-HEXPPM="images/$2.hexppm"
-PIXLIST="pixlists/$2.pixlist"
-ALPHACOLOR="$3"
-FNAME="$2"
+
+########################################################################
+FNAME="$(echo $2 | sed -e 's/\..*$//' -e 's/^images\///')"
+IMGFILE="$2"
+PPMFILE="$FNAME.ppm"
+HEXPPM="images/$FNAME.hexppm"
+PIXLIST="pixlists/$FNAME.pixlist"
+SHUFMODE="$3"
 
 test -z "$FLOOTFORKS" && FLOOTFORKS="4"
 
@@ -152,6 +155,20 @@ draw_pixmap() {
 	
 }
 
+convertimg() {
+  
+  if [ -n "$RESIZE" ]
+  then
+    RESIZE="-resize $RESIZE"
+    
+  fi
+  
+  while read -r LINE
+  do
+    echo "PX $LINE"
+  done < <(convert $IMGFILE $RESIZE txt:  | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//')
+}
+
 sx=0
 sy=0
 shuf_xy() {
@@ -190,54 +207,72 @@ shuf_xy() {
 	#~ test $sy -gt 920 && sy=0
 }
 
+flootworker()
+{
+  while true
+	do
+		
+  echo "$(shuf_xy)
+${LOL[$i]}" > /dev/tcp/$IPFLOOT/1337 
+				#echo "${LOL[$i]}" > /dev/tcp/127.0.0.1/1337 &
+				
+        #echo "worker $i PID ${LOLPID[$i]}"
+
+	done
+}
+
 floot() {
 	# small stupid animation, two alternating images
 	if [ "$FNAME" == "winketuxS" ]
 	then
+    echo "drawing winketuxS animation"
 		LOL[1]="$(cat ${FNAME}1.pixlist | shuf)"
 		LOL[2]="$(cat ${FNAME}2.pixlist | shuf )"
 		LOL[3]="$(cat ${FNAME}2.pixlist | shuf )"
 		#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
 	elif [ "$FNAME" == "fill" ]
 	then
+    echo "generating color field with $FLOOTFORKS workers"
     LOL_org="$(gen_field)"
 		for i in $(seq 1 $FLOOTFORKS)
 		do
 			LOL[$i]="$LOL_org"
 		done
 	else
+    #LOL_org="$(convertimg)"
+    echo "convert and shuffle pixels for $FLOOTFORKS workers"
 		for i in $(seq 1 $FLOOTFORKS)
 		do
 		  #LOL[$i]="OFFSET 1 200"
 		  #LOL[$i]="OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-920 -n 1)"
 	#	  LOL[$i]="$(shuf_xy)"
-		  LOL[$i]="$(cat $PIXLIST | shuf)"
+		  #LOL[$i]="$(cat $PIXLIST | shuf)"
+      
+      echo -n "worker $i .."
 		
-		if [ -z "$ALPHACOLOR" ]
-		then 
-			LOL[$i]="$(cat $PIXLIST | shuf)"
-		else
-			LOL[$i]="$(grep -v $ALPHACOLOR $PIXLIST | shuf)"
-		fi
-		
+      if [ -z "$ALPHACOLOR" ]
+      then 
+        #LOL[$i]="$(cat $PIXLIST | shuf)"
+        LOL[$i]="$(convertimg | shuf)"
+      else
+        LOL[$i]="$(convertimg | grep -v $ALPHACOLOR | shuf)"
+      fi
+      echo " DONE!"
 		done
 	fi
 	
-
-	
-	while true
-	do
-		for i in $(seq $FLOOTFORKS) 
-		do
-			if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
-			then
-				echo "$(shuf_xy)
-${LOL[$i]}" > /dev/tcp/$IPFLOOT/1337 &
-				#echo "${LOL[$i]}" > /dev/tcp/127.0.0.1/1337 &
-				LOLPID[$i]=$!
-			fi
-		done
-	done
+  while true
+  do
+    for i in $(seq $FLOOTFORKS) 
+      do
+        #echo "check worker $i PID ${LOLPID[$i]} if running "
+        if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
+        then
+          flootworker &
+          LOLPID[$i]=$!
+        fi
+    done
+  done
 }
 
 case $1 in
@@ -252,8 +287,10 @@ case $1 in
     # convert arbeitsplatz.jpg txt: | tail -n +2  | awk '{print $1 $3}'
     # this is probably better
     
-		gen_pixmap
-		draw_pixmap
+		##gen_pixmap
+		##draw_pixmap
+    
+    convertimg > $PIXLIST
 	;;
 		
 	floot) if [ "$SHUFMODE" == "static" ] && ([ -z "$W" ] && [ -z "$H" ])
@@ -265,7 +302,14 @@ case $1 in
          floot
 	;;
 	*)
-		echo "$0 [convertimg, draw_pixmap, floot] [FILENAME] ([alpha color])"
-		exit 1
+		echo "$0 [floot] [FILENAME] ([MODE])"
+    echo "MODE: static (env \$H and \$W for position)"
+    echo "      chaos (env \$H and \$W for position range)"
+		echo "      shake (env \$H and \$W for position range)"
+    echo "      cursor"
+    echo ""
+    echo "available env vars to configure:"
+    echo "RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int)"
+    exit 1
 		;;
 	esac
