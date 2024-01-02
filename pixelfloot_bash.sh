@@ -323,14 +323,14 @@ case $1 in
          floot
 	;;
 	*)
-		echo "$0 [floot] [FILENAME] ([MODE])"
+		echo "$0 [floot] [FILENAME|fill] ([MODE])"
     echo "MODE: static (env \$H and \$W for position)"
     echo "      chaos (env \$H and \$W for position range)"
 		echo "      shake (env \$H and \$W for position range)"
     echo "      cursor"
     echo ""
     echo "available env vars to configure:"
-    echo "RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int)"
+    echo "RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)"
     exit 1
 		;;
 	esac
