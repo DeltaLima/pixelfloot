@@ -9,10 +9,10 @@ FNAME="$(echo $2 | sed -e 's/\..*$//' -e 's/^images\///')"
 IMGFILE="$2"
 PPMFILE="$FNAME.ppm"
 HEXPPM="images/$FNAME.hexppm"
-PIXLIST="pixlists/$FNAME.pixlist"
+PIXLIST="/tmp/$FNAME.pixlist"
 SHUFMODE="$3"
 
-test -z "$FLOOTFORKS" && FLOOTFORKS="3"
+test -z "$FLOOTFORKS" && FLOOTFORKS="2"
 
 declare -a PIXMAP
 declare -a LOL
@@ -226,9 +226,9 @@ floot() {
 	if [ "$FNAME" == "winketuxS" ]
 	then
     echo "drawing winketuxS animation"
-		LOL[1]="$(cat ${FNAME}1.pixlist | shuf)"
-		LOL[2]="$(cat ${FNAME}2.pixlist | shuf )"
-		LOL[3]="$(cat ${FNAME}2.pixlist | shuf )"
+		LOL[1]="$(cat pixlists/${FNAME}1.pixlist | shuf)"
+		LOL[2]="$(cat pixlists/${FNAME}2.pixlist | shuf )"
+		LOL[3]="$(cat pixlists/${FNAME}2.pixlist | shuf )"
 		#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
 	elif [ "$FNAME" == "fill" ]
 	then
@@ -239,7 +239,10 @@ floot() {
 			LOL[$i]="$LOL_org"
 		done
 	else
-    #LOL_org="$(convertimg)"
+    # generate a tmp file, as i have trouble atm to figure out
+    # why free space get lost when i generate the pixlist directly
+    # in ram
+    convertimg > $PIXLIST
     echo "convert and shuffle pixels for $FLOOTFORKS workers"
 		for i in $(seq 1 $FLOOTFORKS)
 		do
@@ -252,10 +255,11 @@ floot() {
 		
       if [ -z "$ALPHACOLOR" ]
       then 
-        #LOL[$i]="$(cat $PIXLIST | shuf)"
-        LOL[$i]="$(convertimg | shuf)"
+        LOL[$i]="$(cat $PIXLIST | shuf)"
+        #LOL[$i]="$(convertimg | shuf)"
       else
-        LOL[$i]="$(convertimg | grep -v $ALPHACOLOR | shuf)"
+        LOL[$i]="$(grep -v $ALPHACOLOR $PIXLIST | shuf)"
+        #LOL[$i]="$(convertimg | grep -v $ALPHACOLOR | shuf)"
       fi
       echo " DONE!"
 		done
@@ -291,6 +295,7 @@ case $1 in
 		##draw_pixmap
     
     convertimg > $PIXLIST
+    echo "file $PIXLIST" generated
 	;;
 		
 	floot) if [ "$SHUFMODE" == "static" ] && ([ -z "$W" ] && [ -z "$H" ])
