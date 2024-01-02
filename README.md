@@ -8,6 +8,7 @@ pixelfloot was built during the 37c3. in its actual state, its just a mess. I ho
 ## examples
 
 Display image: `./pixelfloot_bash.sh floot images/lucky-cat.jpg`
+ set position: `W=1337 H=420 ./pixelfloot_bash.sh floot images/lucky-cat.jpg`
 
 image random position: `./pixelfloot_bash.sh floot images/lucky-cat.jpg chaos`
   wider "chaos-radio": `W=1000 H=600 ./pixelfloot_bash.sh floot images/lucky-cat.jpg chaos`
