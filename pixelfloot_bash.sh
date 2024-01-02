@@ -297,19 +297,21 @@ floot() {
 
 case $1 in
 
+### DEPRECATED - JUST FOR TESTING
 	draw_pixmap) draw_pixmap
 	;;
 	
 	gen_pixmap) gen_pixmap
 	;;
+### END DEPRECATED - JUST FOR TESTING
 
 	convertimg)
-    # convert arbeitsplatz.jpg txt: | tail -n +2  | awk '{print $1 $3}'
-    # this is probably better
-    
+    # old way
 		##gen_pixmap
 		##draw_pixmap
     
+    # convert arbeitsplatz.jpg txt: | tail -n +2  | awk '{print $1 $3}'
+    # this is probably better
     convertimg > $PIXLIST
     echo "file $PIXLIST" generated
 	;;
@@ -323,7 +325,7 @@ case $1 in
          floot
 	;;
 	*)
-		echo "$0 [floot] [FILENAME|fill] ([MODE])"
+		echo "$0 [floot|convertimg] [FILENAME|fill] ([MODE])"
     echo "MODE: static (env \$H and \$W for position)"
     echo "      chaos (env \$H and \$W for position range)"
 		echo "      shake (env \$H and \$W for position range)"
