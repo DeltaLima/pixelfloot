@@ -12,6 +12,8 @@ HEXPPM="images/$FNAME.hexppm"
 PIXLIST="/tmp/$FNAME.pixlist"
 SHUFMODE="$3"
 
+FLOOTSRUNNING=0
+
 test -z "$FLOOTFORKS" && FLOOTFORKS="2"
 
 declare -a PIXMAP
@@ -23,7 +25,7 @@ function hex() {
     printf "%02X%02X%02X" ${*//','/' '}
 }
 
-
+######  OLDFOOO ######
 
 gen_pixmap() {
 	y=0
@@ -67,22 +69,6 @@ gen_pixmap() {
 		#~ done
 	done < "$PPMFILE"
 	
-}
-
-gen_field() {
-
-test -z $W && W=640
-test -z $H && H=480
-test -z $COLOR && COLOR="666999"
-echo "drawing $W x $H - $COLOR" >&2
-for x in  $(seq 1 $W) 
-	do
-	for y in $(seq 1 $H)
-	do
-		echo "PX $x $y $COLOR"
-	done
-done
-
 }
 
 draw_pixmap() {
@@ -155,6 +141,27 @@ draw_pixmap() {
 	
 }
 
+
+###### END OLDFOOO ######
+
+
+gen_field() {
+
+test -z $W && W=640
+test -z $H && H=480
+test -z $COLOR && COLOR="666999"
+echo "drawing $W x $H - $COLOR" >&2
+for x in  $(seq 1 $W) 
+	do
+	for y in $(seq 1 $H)
+	do
+		echo "PX $x $y $COLOR"
+	done
+done
+
+}
+
+
 convertimg() {
   
   if [ -n "$RESIZE" ]
@@ -211,9 +218,11 @@ flootworker()
 {
   while true
 	do
-		
-  echo "$(shuf_xy)
+		#FLOOTSRUNNING=$((FLOOTSRUNNING+1))
+    #test $FLOOTSRUNNING -le $FLOOTFORKS && 
+    echo "$(shuf_xy)
 ${LOL[$i]}" > /dev/tcp/$IPFLOOT/1337 
+    #FLOOTSRUNNING=$((FLOOTSRUNNING-1))
 				#echo "${LOL[$i]}" > /dev/tcp/127.0.0.1/1337 &
 				
         #echo "worker $i PID ${LOLPID[$i]}"
@@ -242,8 +251,9 @@ floot() {
     # generate a tmp file, as i have trouble atm to figure out
     # why free space get lost when i generate the pixlist directly
     # in ram
+    echo "generating tmp file $PIXLIST"
     convertimg > $PIXLIST
-    echo "convert and shuffle pixels for $FLOOTFORKS workers"
+    echo "shuffle pixels in $PIXLIST for $FLOOTFORKS workers"
 		for i in $(seq 1 $FLOOTFORKS)
 		do
 		  #LOL[$i]="OFFSET 1 200"
@@ -251,7 +261,7 @@ floot() {
 	#	  LOL[$i]="$(shuf_xy)"
 		  #LOL[$i]="$(cat $PIXLIST | shuf)"
       
-      echo -n "worker $i .."
+      echo -n "prepare worker $i .."
 		
       if [ -z "$ALPHACOLOR" ]
       then 
@@ -265,6 +275,7 @@ floot() {
 		done
 	fi
 	
+  echo "starting $FLOOTFORKS workers"
   while true
   do
     for i in $(seq $FLOOTFORKS) 
@@ -272,8 +283,13 @@ floot() {
         #echo "check worker $i PID ${LOLPID[$i]} if running "
         if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
         then
-          flootworker &
-          LOLPID[$i]=$!
+          echo "worker $i is not running, starting it"
+          #if [ "$FLOOTSRUNNING" -le "$FLOOTFORKS" ]
+          #then
+            flootworker &
+            LOLPID[$i]=$!
+          #fi
+          
         fi
     done
   done
