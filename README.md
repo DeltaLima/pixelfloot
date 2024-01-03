@@ -28,6 +28,7 @@ MODE: static (env $H and $W for position)
 
 available env vars to configure:
 RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)
+IPFLOOT(string), FLOOTPORT(string), USECACHE(bool)
 ```
 
 Running on my Ryzen 4700G with [wellenbrecher](https://github.com/bits0rcerer/wellenbrecher) 1280x720 and three workers,
