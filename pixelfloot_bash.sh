@@ -203,7 +203,7 @@ done
 
 
 convertimg() {
-  
+  command -v convert || message error "${YELLOW}convert${ENDCOLOR} not found"
   if [ -n "$RESIZE" ]
   then
     RESIZE="-resize $RESIZE"
@@ -231,7 +231,8 @@ shuf_xy() {
         echo "OFFSET $(shuf -i $W-$(($W+10)) -n 1) $(shuf -i $H-$(($H+10)) -n 1)"
 	;;
 	
-	cursor) echo "OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
+	cursor) command -v xdotool || message error "${YELLOW}xdotool${ENDCOLOR} not found"
+          echo "OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
 	;;
 
 	static|*) test -z $H && H=0
