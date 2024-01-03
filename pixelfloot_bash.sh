@@ -25,12 +25,47 @@ declare -a PIXMAP
 declare -a LOL
 declare -a LOLPID
 
+# colors for colored output 8)
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW="\e[33m"
+ENDCOLOR="\e[0m"
+
+function message() {
+     case $1 in
+     warn)
+       MESSAGE_TYPE="${YELLOW}WARN${ENDCOLOR}"
+     ;;
+     error)
+       MESSAGE_TYPE="${RED}ERROR${ENDCOLOR}"
+     ;;
+     info|*)
+       MESSAGE_TYPE="${GREEN}INFO${ENDCOLOR}"
+     ;;
+     esac
+
+     if [ "$1" == "info" ] || [ "$1" == "warn" ] || [ "$1" == "error" ]
+     then
+       MESSAGE=$2
+     else
+       MESSAGE=$1
+     fi
+
+     echo -e "[${MESSAGE_TYPE}] $MESSAGE"
+}
+
+error () 
+{
+  message error "${RED}ERROR!!${ENDCOLOR}"
+  exit 1
+}
+
+
+######  OLDFOOO ######
 # https://gist.github.com/nberlette/e3e303a81f2c41927bf4fe90fb89d97f
 function hex() {
     printf "%02X%02X%02X" ${*//','/' '}
 }
-
-######  OLDFOOO ######
 
 gen_pixmap() {
 	y=0
@@ -155,7 +190,7 @@ gen_field() {
 test -z $W && W=640
 test -z $H && H=480
 test -z $COLOR && COLOR="666999"
-echo "drawing $W x $H - $COLOR" >&2
+message "drawing ${YELLOW}$W x $H - $COLOR${ENDCOLOR}" >&2
 for x in  $(seq 0 $W) 
 	do
 	for y in $(seq 0 $H)
@@ -225,7 +260,7 @@ flootworker()
 		#FLOOTSRUNNING=$((FLOOTSRUNNING+1))
     #test $FLOOTSRUNNING -le $FLOOTFORKS && 
     echo "$(shuf_xy)
-${LOL[$i]}" > /dev/tcp/$IPFLOOT/$FLOOTPORT 
+${LOL[$i]}" > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "transmission in worker ${YELLOW}$1${ENDCOLOR} ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
     #FLOOTSRUNNING=$((FLOOTSRUNNING-1))
 				#echo "${LOL[$i]}" > /dev/tcp/127.0.0.1/1337 &
 				
@@ -238,7 +273,7 @@ checkfile() {
 
    if [ ! -f $1 ]
    then
-	   echo "file $1 does not exist."
+	   message error "file ${YELLOW}$1${ENDCOLOR} does not exist."
 	   exit 1
    fi
 
@@ -248,14 +283,14 @@ floot() {
 	# small stupid animation, two alternating images
 	if [ "$FNAME" == "winketuxS" ]
 	then
-    echo "drawing winketuxS animation"
+    message "drawing winketuxS animation"
 		LOL[1]="$(cat pixlists/${FNAME}1.pixlist | shuf)"
 		LOL[2]="$(cat pixlists/${FNAME}2.pixlist | shuf )"
 		LOL[3]="$(cat pixlists/${FNAME}2.pixlist | shuf )"
 		#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
 	elif [ "$FNAME" == "fill" ]
 	then
-    echo "generating color field with $FLOOTFORKS workers"
+    message "generating color field with ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
     LOL_org="$(gen_field)"
 		for i in $(seq 1 $FLOOTFORKS)
 		do
@@ -268,13 +303,13 @@ floot() {
     if [ $USECACHE ]
     then
 	   checkfile $PIXLIST
-	   echo "using cache from $PIXLIST"
+	   message "using cache from ${YELLOW}$PIXLIST${ENDCOLOR}"
     else
 	   checkfile $IMGFILE
-	   echo "generating tmp file $PIXLIST"
+	   message "generating tmp file ${YELLOW}$PIXLIST${ENDCOLOR}"
 	   convertimg > $PIXLIST
     fi
-    echo "shuffle pixels in $PIXLIST for $FLOOTFORKS workers"
+    message "shuffle pixels in ${YELLOW}$PIXLIST${ENDCOLOR} for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
 		for i in $(seq 1 $FLOOTFORKS)
 		do
 		  #LOL[$i]="OFFSET 1 200"
@@ -282,7 +317,7 @@ floot() {
 	#	  LOL[$i]="$(shuf_xy)"
 		  #LOL[$i]="$(cat $PIXLIST | shuf)"
       
-      echo -n "prepare worker $i .."
+      message "prepare worker ${YELLOW}$i${ENDCOLOR} .."
 		
       if [ -z "$ALPHACOLOR" ]
       then 
@@ -292,11 +327,11 @@ floot() {
         LOL[$i]="$(grep -v $ALPHACOLOR $PIXLIST | shuf)"
         #LOL[$i]="$(convertimg | grep -v $ALPHACOLOR | shuf)"
       fi
-      echo " DONE!"
+      message "${GREEN}DONE!${ENDCOLOR}"
 		done
 	fi
 	
-  echo "starting $FLOOTFORKS workers"
+  message "starting $FLOOTFORKS workers"
   while true
   do
     for i in $(seq $FLOOTFORKS) 
@@ -304,10 +339,10 @@ floot() {
         #echo "check worker $i PID ${LOLPID[$i]} if running "
         if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
         then
-          echo "worker $i is not running, starting it"
+          message "worker ${YELLOW}$i${ENDCOLOR} is not running, starting it"
           #if [ "$FLOOTSRUNNING" -le "$FLOOTFORKS" ]
           #then
-            flootworker &
+            flootworker $i &
             LOLPID[$i]=$!
           #fi
           
@@ -334,10 +369,10 @@ case $1 in
     # convert arbeitsplatz.jpg txt: | tail -n +2  | awk '{print $1 $3}'
     # this is probably better
     convertimg > $PIXLIST
-    echo "file $PIXLIST" generated
+    message "file ${YELLOW}$PIXLIST${ENDCOLOR}" generated
 	;;
 		
-	floot) echo "flooting ${IPFLOOT}:${FLOOTPORT}"
+	floot) message "flooting ${YELLOW}${IPFLOOT}:${FLOOTPORT}${ENDCOLOR}"
 		if [ "$SHUFMODE" == "static" ] && ([ -z "$W" ] && [ -z "$H" ])
          then
            echo "please specify coords with e.g. 'W=420 H=420 SHUFMODE=static $0 floot $FNAME" >&2
