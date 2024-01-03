@@ -34,3 +34,7 @@ Running on my Ryzen 4700G with [wellenbrecher](https://github.com/bits0rcerer/we
 i get around 1,5Gbit/s localhost traffic.
 
 ![pixelfloot screenshot](demo/screenshot_pixelfloot.png)
+
+## try it out
+
+you can use my pixelflut server [pixelflut.la10cy.net](http://pixelflut.la10cy.net) and watch the board on the homepage, every 5s refreshed or connect by VNC to [pixelflut.la10cy.net:5900](vnc://pixelflut.la10cy.net:5900)
