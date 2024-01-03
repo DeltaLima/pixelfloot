@@ -219,7 +219,6 @@ convertimg() {
 sx=0
 sy=0
 shuf_xy() {
-  
 	case $SHUFMODE in
 	chaos) test -z $H && H=640
         test -z $W && W=480
@@ -379,7 +378,16 @@ case $1 in
            echo "please specify coords with e.g. 'W=420 H=420 SHUFMODE=static $0 floot $FNAME" >&2
            exit 1
          fi
+         #~ message "request board size from ${YELLOW}${IPFLOOT}:${FLOOTPORT}${ENDCOLOR}"
+         #~ exec 5<>/dev/tcp/$IPFLOOT/$FLOOTPORT
+         #~ echo "SIZE" >&5
+         #~ #sleep 1
+         #~ BOARDSIZE="$(cat <&5)" &
+         #~ cat <&5 &
+         #~ sleep 1
          
+         #~ exec 5<&-
+         #~ message "$BOARSIZE"
          floot
 	;;
 	*)
