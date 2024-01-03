@@ -1,8 +1,13 @@
 #!/bin/bash
 
-#IPFLOOT="151.217.15.90"
-test -z "$IPFLOOT" && IPFLOOT="127.0.0.1"
-test -z "$FLOOTPORT" && FLOOTPORT="1337"
+# pixelfloot - a pixelflut client written in bash
+# this script was made during the 37c3
+
+# pixelflut.la10cy.net - 130.185.104.31
+# my small pixelflut test server, feel free to have fun with it! :)
+# You can watch the board by VNC at port 5900, max connections are 2
+test -z "$IPFLOOT" && IPFLOOT="130.185.104.31"
+test -z "$FLOOTPORT" && FLOOTPORT="1234"
 
 ########################################################################
 FNAME="$(echo $2 | sed -e 's/\..*$//' -e 's/^images\///')"
