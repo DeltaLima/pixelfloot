@@ -15,12 +15,16 @@ pixelfloot was built during the 37c3. in its actual state, its just a mess. I ho
   - set the position  : `W=420 H=420 ./pixelfloot_bash.sh floot images/lucky-cat.jpg shake`
 - move image with your cursor (needs `xdotool`): `./pixelfloot_bash.sh floot images/lucky-cat.jpg cursor`
 - Use a color as "alpha" (remove background): `ALPHACOLOR=FF00FF ./pixelfloot_bash.sh floot images/cursor.ppm cursor`
+- write text: `TEXT="pixelflut makes a lot of fun! :)" ./pixelfloot_bash.sh floot text`
+  - set the size of the Textbox and the textcolor: `COLOR=FF00FF SIZE=240 TEXT="colors, yeah!" ./pixelfloot_bash.sh floot text`
+  - you can also use ALPHACOLOR here, or set your: `ALPHACOLOR=000000 TEXT="colors, yeah!" ./pixelfloot_bash.sh floot text`
+  - define your own background color: `BGCOLOR=0000FF SIZE=240 TEXT="colors, yeah!" ./pixelfloot_bash.sh floot text`
 - increase No of concurrent connections: `FLOOTFORKS=8 ./pixelfloot_bash.sh floot images/lucky-cat.jpg`
 - specify IP and PORT: `IPFLOOT=127.0.0.1 FLOOTPORT=1337 ./pixelfloot_bash.sh floot images/lucky-cat.jpg`
 
 ```shell
 $ ./pixelfloot_bash.sh help
-./pixelfloot_bash.sh [floot|convertimg] [FILENAME|fill] ([MODE])
+./pixelfloot_bash.sh [floot|convertimg] [FILENAME|fill|text] ([MODE])
 MODE: static (env $H and $W for position)
       chaos (env $H and $W for position range)
       shake (env $H and $W for position range)
@@ -28,7 +32,9 @@ MODE: static (env $H and $W for position)
 
 available env vars to configure:
 RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)
+SIZE(int), TEXT(string), TEXTSIZE(int), BGCOLOR(hex), COLOR(hex)
 IPFLOOT(string), FLOOTPORT(string), USECACHE(bool)
+
 ```
 
 Running on my Ryzen 4700G with [wellenbrecher](https://github.com/bits0rcerer/wellenbrecher) 1280x720 and three workers,

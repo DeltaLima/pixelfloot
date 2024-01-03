@@ -216,6 +216,10 @@ convertimg() {
   done < <(convert $IMGFILE $RESIZE txt:  | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//')
 }
 
+#~ generate_text() {
+  
+#~ }
+
 sx=0
 sy=0
 shuf_xy() {
@@ -296,7 +300,39 @@ floot() {
 		do
 			LOL[$i]="$LOL_org"
 		done
-	else
+	elif [ "$FNAME" == "text" ]
+  then
+    test -z "$TEXT" && TEXT="pixelfloot"
+    test -z "$TEXTSIZE" && TEXTSIZE=42
+    test -z "$COLOR" && COLOR="000000"
+    test -z "$BGCOLOR" && BGCOLOR="FFFFFF"
+    
+    if [ -n "$SIZE" ]
+    then
+      SIZE="-size $SIZE"
+    
+    fi
+    #set -x 
+    #convert -fill lightgreen  -background white -pointsize 40 caption:"KARTTUR" -quality 72  DstImage.png
+    message "generating text, size $TEXTSIZE for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
+    LOL_org="$(convert ${SIZE} +antialias -depth 8 -fill \#${COLOR}  -background \#${BGCOLOR} -pointsize ${TEXTSIZE} caption:"${TEXT}" -quality 72  txt: | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /')"
+    #echo "$LOL_org"
+    #read
+    for i in $(seq 1 $FLOOTFORKS)
+		do
+			#LOL[$i]="$(echo "$LOL_org" | shuf )"
+      if [ -z "$ALPHACOLOR" ]
+      then 
+        LOL[$i]="$(echo "$LOL_org" | shuf)"
+        #LOL[$i]="$(convertimg | shuf)"
+      else
+        LOL[$i]="$(echo "$LOL_org" | grep -v $ALPHACOLOR | shuf)"
+        #LOL[$i]="$(convertimg | grep -v $ALPHACOLOR | shuf)"
+      fi
+		done    
+    
+    
+  else
     # generate a tmp file, as i have trouble atm to figure out
     # why free space get lost when i generate the pixlist directly
     # in ram
@@ -391,7 +427,7 @@ case $1 in
          floot
 	;;
 	*)
-		echo "$0 [floot|convertimg] [FILENAME|fill] ([MODE])"
+		echo "$0 [floot|convertimg] [FILENAME|fill|text] ([MODE])"
     echo "MODE: static (env \$H and \$W for position)"
     echo "      chaos (env \$H and \$W for position range)"
 		echo "      shake (env \$H and \$W for position range)"
@@ -399,6 +435,7 @@ case $1 in
     echo ""
     echo "available env vars to configure:"
     echo "RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)"
+    echo "SIZE(int), TEXT(string), TEXTSIZE(int), BGCOLOR(hex), COLOR(hex)"
     echo "IPFLOOT(string), FLOOTPORT(string), USECACHE(bool)"
     exit 1
 		;;
