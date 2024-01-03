@@ -310,7 +310,7 @@ floot() {
 	   message "generating tmp file ${YELLOW}$PIXLIST${ENDCOLOR}"
 	   convertimg > $PIXLIST
     fi
-    message "shuffle pixels in ${YELLOW}$PIXLIST${ENDCOLOR} for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
+    message "shuffle pixels from ${YELLOW}$PIXLIST${ENDCOLOR} for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
 		for i in $(seq 1 $FLOOTFORKS)
 		do
 		  #LOL[$i]="OFFSET 1 200"
