@@ -234,6 +234,16 @@ ${LOL[$i]}" > /dev/tcp/$IPFLOOT/$FLOOTPORT
 	done
 }
 
+checkfile() {
+
+   if [ ! -f $1 ]
+   then
+	   echo "file $1 does not exist."
+	   exit 1
+   fi
+
+}
+
 floot() {
 	# small stupid animation, two alternating images
 	if [ "$FNAME" == "winketuxS" ]
@@ -255,8 +265,15 @@ floot() {
     # generate a tmp file, as i have trouble atm to figure out
     # why free space get lost when i generate the pixlist directly
     # in ram
-    echo "generating tmp file $PIXLIST"
-    convertimg > $PIXLIST
+    if [ $USECACHE ]
+    then
+	   checkfile $PIXLIST
+	   echo "using cache from $PIXLIST"
+    else
+	   checkfile $IMGFILE
+	   echo "generating tmp file $PIXLIST"
+	   convertimg > $PIXLIST
+    fi
     echo "shuffle pixels in $PIXLIST for $FLOOTFORKS workers"
 		for i in $(seq 1 $FLOOTFORKS)
 		do
@@ -320,7 +337,8 @@ case $1 in
     echo "file $PIXLIST" generated
 	;;
 		
-	floot) if [ "$SHUFMODE" == "static" ] && ([ -z "$W" ] && [ -z "$H" ])
+	floot) echo "flooting ${IPFLOOT}:${FLOOTPORT}"
+		if [ "$SHUFMODE" == "static" ] && ([ -z "$W" ] && [ -z "$H" ])
          then
            echo "please specify coords with e.g. 'W=420 H=420 SHUFMODE=static $0 floot $FNAME" >&2
            exit 1
@@ -337,7 +355,7 @@ case $1 in
     echo ""
     echo "available env vars to configure:"
     echo "RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)"
-    echo "IPFLOOT(string), FLOOTPORT(string)"
+    echo "IPFLOOT(string), FLOOTPORT(string), USECACHE(bool)"
     exit 1
 		;;
 	esac
