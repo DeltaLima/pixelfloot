@@ -301,7 +301,7 @@ flootworker()
 
     xymode
     echo "$OFFSET
-${LOL[$i]}" #> /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "transmission in worker ${YELLOW}$1${ENDCOLOR} ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
+${LOL[$1]}" #> /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "transmission in worker ${YELLOW}$1${ENDCOLOR} ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
     #FLOOTSRUNNING=$((FLOOTSRUNNING-1))
 				#echo "${LOL[$i]}" > /dev/tcp/127.0.0.1/1337 &
 				
