@@ -212,7 +212,11 @@ done
 
 
 convertimg() {
-  command -v convert || message error "${YELLOW}convert${ENDCOLOR} not found"
+  if ! command -v convert > /dev/null
+  then
+    message error "${YELLOW}convert${ENDCOLOR} not found"
+    exit 1
+  fi
   if [ -n "$RESIZE" ]
   then
     RESIZE="-resize $RESIZE"
@@ -227,7 +231,7 @@ convertimg() {
 #~ }
 
 
-shuf_xy() {
+xymode() {
 	case $SHUFMODE in
 	chaos) test -z $H && H=640
         test -z $W && W=480
@@ -239,8 +243,7 @@ shuf_xy() {
         OFFSET="OFFSET $(shuf -i $W-$(($W+10)) -n 1) $(shuf -i $H-$(($H+10)) -n 1)"
 	;;
 	
-	cursor) command -v xdotool || message error "${YELLOW}xdotool${ENDCOLOR} not found"
-          OFFSET="OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
+	cursor) OFFSET="OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
 	;;
   
   bounce)       
@@ -276,7 +279,7 @@ shuf_xy() {
 
 	static|*) test -z $H && H=0
         test -z $W && W=0
-        echo "OFFSET $W $H"
+        OFFSET="OFFSET $W $H"
 	;;	
 	esac
 	#
@@ -300,7 +303,7 @@ flootworker()
 		#FLOOTSRUNNING=$((FLOOTSRUNNING+1))
     #test $FLOOTSRUNNING -le $FLOOTFORKS && 
 
-    shuf_xy
+    xymode
     echo "$OFFSET
 ${LOL[$i]}" > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "transmission in worker ${YELLOW}$1${ENDCOLOR} ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
     #FLOOTSRUNNING=$((FLOOTSRUNNING-1))
@@ -321,26 +324,47 @@ checkfile() {
 
 }
 
+loadLOL() {
+  if [ -n "$ALPHACOLOR" ]
+  then 
+    
+    for i in $(seq 1 $FLOOTFORKS)
+      do
+        if [ -z "$ALPHACOLOR" ]
+        then 
+          message "shuffle pixels for worker ${YELLOW}${i}${ENDCOLOR}"
+          LOL[$i]="$(echo "$LOL_org" | shuf)"
+        else
+          message "remove aplha color ${YELLOW}${ALPHACOLOR}${ENDCOLOR} and shuffle pixels for worker ${YELLOW}${i}${ENDCOLOR}"
+          LOL[$i]="$(echo "$LOL_org" | grep -v $ALPHACOLOR | shuf)"
+        fi
+      done 
+  fi
+}
+
 floot() {
 	# small stupid animation, two alternating images
-	if [ "$FNAME" == "winketuxS" ]
-	then
+  
+  case $FNAME in
+  winketuxS) 
     message "drawing winketuxS animation"
 		LOL[1]="$(cat pixlists/${FNAME}1.pixlist | shuf)"
 		LOL[2]="$(cat pixlists/${FNAME}2.pixlist | shuf )"
 		LOL[3]="$(cat pixlists/${FNAME}2.pixlist | shuf )"
 		#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
-	elif [ "$FNAME" == "fill" ]
-	then
+  ;;
+  
+  fill)
     message "generating color field with ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
     LOL_org="$(gen_field)"
 		for i in $(seq 1 $FLOOTFORKS)
 		do
 			LOL[$i]="$LOL_org"
 		done
-	elif [ "$FNAME" == "text" ] || [ -z "$FNAME" ]
-  then
-    test -z "$TEXT" && TEXT="pixelfloot"
+  ;;
+  
+  ""|text)
+    test -z "$TEXT" && TEXT="$0"
     test -z "$TEXTSIZE" && TEXTSIZE=42
     test -z "$COLOR" && COLOR="000000"
     test -z "$BGCOLOR" && BGCOLOR="FFFFFF"
@@ -350,27 +374,14 @@ floot() {
       SIZE="-size $SIZE"
     
     fi
-    #set -x 
     #convert -fill lightgreen  -background white -pointsize 40 caption:"KARTTUR" -quality 72  DstImage.png
     message "generating text, size $TEXTSIZE for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
     LOL_org="$(convert ${SIZE} +antialias -depth 8 -fill \#${COLOR}  -background \#${BGCOLOR} -pointsize ${TEXTSIZE} caption:"${TEXT}" -quality 72  txt: | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /')"
-    #echo "$LOL_org"
-    #read
-    for i in $(seq 1 $FLOOTFORKS)
-		do
-			#LOL[$i]="$(echo "$LOL_org" | shuf )"
-      if [ -z "$ALPHACOLOR" ]
-      then 
-        LOL[$i]="$(echo "$LOL_org" | shuf)"
-        #LOL[$i]="$(convertimg | shuf)"
-      else
-        LOL[$i]="$(echo "$LOL_org" | grep -v $ALPHACOLOR | shuf)"
-        #LOL[$i]="$(convertimg | grep -v $ALPHACOLOR | shuf)"
-      fi
-		done    
     
-    
-  else
+    loadLOL
+  ;;
+  
+  *)
     # generate a tmp file, as i have trouble atm to figure out
     # why free space get lost when i generate the pixlist directly
     # in ram
@@ -378,12 +389,14 @@ floot() {
     then
 	   checkfile $PIXLIST
 	   message "using cache from ${YELLOW}$PIXLIST${ENDCOLOR}"
+     LOL_org="$(cat $PIXLIST)"
     else
 	   checkfile $IMGFILE
-	   message "generating tmp file ${YELLOW}$PIXLIST${ENDCOLOR}"
-	   convertimg > $PIXLIST
+	   message "convertimg image file ${YELLOW}${IMGFILE}${ENDCOLOR}"
+	   LOL_org="$(convertimg)"
+     #convertimg > $PIXLIST
     fi
-    message "shuffle pixels from ${YELLOW}$PIXLIST${ENDCOLOR} for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
+    
 		for i in $(seq 1 $FLOOTFORKS)
 		do
 		  #LOL[$i]="OFFSET 1 200"
@@ -392,18 +405,13 @@ floot() {
 		  #LOL[$i]="$(cat $PIXLIST | shuf)"
       
       message "prepare worker ${YELLOW}$i${ENDCOLOR} .."
-		
-      if [ -z "$ALPHACOLOR" ]
-      then 
-        LOL[$i]="$(cat $PIXLIST | shuf)"
-        #LOL[$i]="$(convertimg | shuf)"
-      else
-        LOL[$i]="$(grep -v $ALPHACOLOR $PIXLIST | shuf)"
-        #LOL[$i]="$(convertimg | grep -v $ALPHACOLOR | shuf)"
-      fi
+      #set -x 
+      loadLOL
+      #set +x 
       message "${GREEN}DONE!${ENDCOLOR}"
 		done
-	fi
+  ;;
+  esac
 	
   message "starting $FLOOTFORKS workers"
   while true
@@ -462,7 +470,20 @@ case $1 in
          
          #~ exec 5<&-
          #~ message "$BOARSIZE"
-         floot
+         case $SHUFMODE in 
+         cursor)
+          if ! command -v xdotool > /dev/null
+          then
+          message error "${YELLOW}xdotool${ENDCOLOR} not found" 
+          exit 1
+          fi
+          ;;
+         *)
+          message "all requirements satisfied ${GREEN}:)${ENDCOLOR}"
+          ;;
+        esac
+        
+        floot
 	;;
 	*)
 		echo "$0 [floot|convertimg] [FILENAME|fill|text] ([MODE])"
