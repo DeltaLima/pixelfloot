@@ -27,6 +27,7 @@ SY=0
 XDIR=0
 YDIR=0
 XORY=0
+BOUNCESTEP=2
 
 ## end bounce
 
@@ -290,20 +291,20 @@ flootworker()
         then
           if [ $XDIR == 0 ]
           then
-            SX=$(($SX+5))
+            SX=$(($SX+$BOUNCESTEP))
             test $SX -ge $X_MAX && XDIR=1
           else
-            SX=$(($SX-5))
+            SX=$(($SX-$BOUNCESTEP))
             test $SX -eq 0 && XDIR=0
           fi
           XORY=1
         else
           if [ $YDIR == 0 ]
           then
-            SY=$(($SY+5))
+            SY=$(($SY+$BOUNCESTEP))
             test $SY -ge $Y_MAX && YDIR=1
           else
-            SY=$(($SY-5))
+            SY=$(($SY-$BOUNCESTEP))
             test $SY -eq 0 && YDIR=0
           fi
           XORY=0
