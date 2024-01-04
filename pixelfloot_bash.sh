@@ -231,16 +231,16 @@ shuf_xy() {
 	case $SHUFMODE in
 	chaos) test -z $H && H=640
         test -z $W && W=480
-        echo "OFFSET $(shuf -i 0-$W -n 1) $(shuf -i 0-$H -n 1)"
+        OFFSET="OFFSET $(shuf -i 0-$W -n 1) $(shuf -i 0-$H -n 1)"
 	;;
 	
 	shake) test -z $H && H=0
         test -z $W && W=0
-        echo "OFFSET $(shuf -i $W-$(($W+10)) -n 1) $(shuf -i $H-$(($H+10)) -n 1)"
+        OFFSET="OFFSET $(shuf -i $W-$(($W+10)) -n 1) $(shuf -i $H-$(($H+10)) -n 1)"
 	;;
 	
 	cursor) command -v xdotool || message error "${YELLOW}xdotool${ENDCOLOR} not found"
-          echo "OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
+          OFFSET="OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
 	;;
   
   bounce)       
@@ -251,8 +251,27 @@ shuf_xy() {
         # 0 means up, 1 means down
         # 
         # handled outsite, in the flootworker()
-      
-        echo "OFFSET $1 $2"
+        test -z $X_MAX && X_MAX=800
+        test -z $Y_MAX && Y_MAX=600
+        
+        if [ $XDIR == 0 ]
+          then
+            SX=$(($SX+$BOUNCESTEP))
+            test $SX -ge $X_MAX && XDIR=1
+          else
+            SX=$(($SX-$BOUNCESTEP))
+            test $SX -eq 0 && XDIR=0
+        fi
+        
+        if [ $YDIR == 0 ]
+          then
+            SY=$(($SY+$BOUNCESTEP))
+            test $SY -ge $Y_MAX && YDIR=1
+          else
+            SY=$(($SY-$BOUNCESTEP))
+            test $SY -eq 0 && YDIR=0
+        fi
+        OFFSET="OFFSET $SX $SY"
   ;;
 
 	static|*) test -z $H && H=0
@@ -280,33 +299,9 @@ flootworker()
 	do
 		#FLOOTSRUNNING=$((FLOOTSRUNNING+1))
     #test $FLOOTSRUNNING -le $FLOOTFORKS && 
-    if [ "$SHUFMODE" == "bounce" ]
-    then
 
-        test -z $X_MAX && X_MAX=800
-        test -z $Y_MAX && Y_MAX=600
-        
-        if [ $XDIR == 0 ]
-          then
-            SX=$(($SX+$BOUNCESTEP))
-            test $SX -ge $X_MAX && XDIR=1
-          else
-            SX=$(($SX-$BOUNCESTEP))
-            test $SX -eq 0 && XDIR=0
-        fi
-        
-        if [ $YDIR == 0 ]
-          then
-            SY=$(($SY+$BOUNCESTEP))
-            test $SY -ge $Y_MAX && YDIR=1
-          else
-            SY=$(($SY-$BOUNCESTEP))
-            test $SY -eq 0 && YDIR=0
-        fi
-
-    fi
-
-    echo "$(shuf_xy $SX $SY)
+    shuf_xy
+    echo "$OFFSET
 ${LOL[$i]}" > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "transmission in worker ${YELLOW}$1${ENDCOLOR} ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
     #FLOOTSRUNNING=$((FLOOTSRUNNING-1))
 				#echo "${LOL[$i]}" > /dev/tcp/127.0.0.1/1337 &
