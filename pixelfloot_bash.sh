@@ -219,6 +219,9 @@ convertimg() {
 
 sx=0
 sy=0
+xdir=0
+ydir=0
+xory=0
 shuf_xy() {
 	case $SHUFMODE in
 	chaos) test -z $H && H=640
@@ -235,25 +238,44 @@ shuf_xy() {
           echo "OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
 	;;
   
-  bounce) test -z $X_MAX && X_MAX=800
+  bounce) 
+        set -x 
+        test -z $X_MAX && X_MAX=800
         test -z $Y_MAX && Y_MAX=600
         
-       
-        if [ $sx -le $X_MAX ]
-        then
-          sx=$((sx+1))
-        else
-          sx=$((sx-1))
-        fi
+        # every call is a run in a loop
+        # in every run we count x or y alternativ one up or down
+        # we decide with with var 'xory', 0 is x , 1 is y
+        # up or down ist set with 'xdir' and 'ydir'
+        # 0 means up, 1 means down
+        # 
+        message warn "X $sx Y $sy" >&2
         
-        if [ $sy -le $Y_MAX ]
+        if [ $xory == 0 ]
         then
-          sy=$((sy+1))
+          if [ $xdir == 0 ]
+          then
+            sx=$(($sx+1))
+            test $sx -ge $X_MAX && xdir=1
+          else
+            sx=$(($sx-1))
+            test $sx -eq 0 && xdir=0
+          fi
+          xory=1
         else
-          sy=$((sy-1))
+          if [ $ydir == 0 ]
+          then
+            sy=$(($sy+1))
+            test $sy -ge $Y_MAX && ydir=1
+          else
+            sy=$(($sy-1))
+            test $sy -eq 0 && ydir=0
+          fi
+          xory=0
         fi
         
         echo "OFFSET $sx $sy"
+        set +x
   ;;
 
 	static|*) test -z $H && H=0
