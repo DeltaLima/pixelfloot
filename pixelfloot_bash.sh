@@ -26,7 +26,6 @@ SX=0
 SY=0
 XDIR=0
 YDIR=0
-XORY=0
 BOUNCESTEP=2
 
 ## end bounce
@@ -287,28 +286,24 @@ flootworker()
         test -z $X_MAX && X_MAX=800
         test -z $Y_MAX && Y_MAX=600
         
-        if [ $XORY == 0 ]
-        then
-          if [ $XDIR == 0 ]
+        if [ $XDIR == 0 ]
           then
             SX=$(($SX+$BOUNCESTEP))
             test $SX -ge $X_MAX && XDIR=1
           else
             SX=$(($SX-$BOUNCESTEP))
             test $SX -eq 0 && XDIR=0
-          fi
-          XORY=1
-        else
-          if [ $YDIR == 0 ]
+        fi
+        
+        if [ $YDIR == 0 ]
           then
             SY=$(($SY+$BOUNCESTEP))
             test $SY -ge $Y_MAX && YDIR=1
           else
             SY=$(($SY-$BOUNCESTEP))
             test $SY -eq 0 && YDIR=0
-          fi
-          XORY=0
         fi
+
     fi
 
     echo "$(shuf_xy $SX $SY)
