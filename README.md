@@ -13,6 +13,8 @@ pixelfloot was built during the 37c3. in its actual state, its just a mess. I ho
   - wider "chaos-radio": `W=1000 H=600 ./pixelfloot_bash.sh floot images/lucky-cat.jpg chaos`
 - image shake position: `./pixelfloot_bash.sh floot images/lucky-cat.jpg shake`
   - set the position  : `W=420 H=420 ./pixelfloot_bash.sh floot images/lucky-cat.jpg shake`
+- image bounce across screen: `./pixelfloot_bash.sh floot images/lucky-cat.jpg bounce`
+  - can set the "bounce-radius": `X_MAX=1000 Y_MAX=500 ./pixelfloot_bash.sh floot images/lucky-cat.jpg bounce`
 - move image with your cursor (needs `xdotool`): `./pixelfloot_bash.sh floot images/lucky-cat.jpg cursor`
 - Use a color as "alpha" (remove background): `ALPHACOLOR=FF00FF ./pixelfloot_bash.sh floot images/cursor.ppm cursor`
 - write text: `TEXT="pixelflut makes a lot of fun! :)" ./pixelfloot_bash.sh floot text`
