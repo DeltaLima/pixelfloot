@@ -29,12 +29,13 @@ MODE: static (env $H and $W for position)
       chaos (env $H and $W for position range)
       shake (env $H and $W for position range)
       cursor
+      bounce (env $Y_MAX and $X_MAX for max bounce range)
 
 available env vars to configure:
 RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)
 SIZE(int), TEXT(string), TEXTSIZE(int), BGCOLOR(hex), COLOR(hex)
+X_MAX(int), Y_MAX(int)
 IPFLOOT(string), FLOOTPORT(string), USECACHE(bool)
-
 ```
 
 Running on my Ryzen 4700G with [wellenbrecher](https://github.com/bits0rcerer/wellenbrecher) 1280x720 and three workers,
