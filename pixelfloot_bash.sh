@@ -293,7 +293,7 @@ xymode() {
 }
 
 flootworker()
-{
+{  
   while true
 	do
 		#FLOOTSRUNNING=$((FLOOTSRUNNING+1))
@@ -312,7 +312,7 @@ ${LOL[$i]}" #> /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "transmission in wor
 
 checkfile() {
 
-   if [ ! -f $1 ]
+   if [ ! -f $1 ] || [ -z $1 ] 
    then
 	   message error "file ${YELLOW}$1${ENDCOLOR} does not exist."
 	   exit 1
@@ -442,8 +442,10 @@ case $1 in
     
     # convert arbeitsplatz.jpg txt: | tail -n +2  | awk '{print $1 $3}'
     # this is probably better
+    checkfile $IMGFILE
+    message "generating pixlist cachefile from ${YELLOW}${IMGFILE}${ENDCOLOR}"
     convertimg > $PIXLIST
-    message "file ${YELLOW}$PIXLIST${ENDCOLOR}" generated
+    message "file ${YELLOW}${PIXLIST}${ENDCOLOR} generated, you can use it with ${GREEN}USECACHE=true $0 floot ${IMGFILE}${YELLOW}"
 	;;
 		
 	floot) message "flooting ${YELLOW}${IPFLOOT}:${FLOOTPORT}${ENDCOLOR}"
