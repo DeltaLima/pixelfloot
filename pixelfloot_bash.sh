@@ -325,9 +325,7 @@ checkfile() {
 }
 
 loadLOL() {
-  if [ -n "$ALPHACOLOR" ]
-  then 
-    
+   
     for i in $(seq 1 $FLOOTFORKS)
       do
         if [ -z "$ALPHACOLOR" ]
@@ -339,7 +337,7 @@ loadLOL() {
           LOL[$i]="$(echo "$LOL_org" | grep -v $ALPHACOLOR | shuf)"
         fi
       done 
-  fi
+
 }
 
 floot() {
