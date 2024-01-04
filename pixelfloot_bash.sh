@@ -21,13 +21,15 @@ FLOOTSRUNNING=0
 
 test -z "$FLOOTFORKS" && FLOOTFORKS="2"
 
+test -z $X_MAX && X_MAX=800
+test -z $Y_MAX && Y_MAX=600
+test -z $X && X=0
+test -z $Y && Y=0
+
 ## bounce
-SX=0
-SY=0
 XDIR=0
 YDIR=0
 BOUNCESTEP=2
-
 ## end bounce
 
 declare -a PIXMAP
@@ -229,14 +231,10 @@ convertimg() {
 
 xymode() {
 	case $SHUFMODE in
-	chaos) test -z $H && H=640
-        test -z $W && W=480
-        OFFSET="OFFSET $(shuf -i 0-$W -n 1) $(shuf -i 0-$H -n 1)"
+	chaos) OFFSET="OFFSET $(shuf -i 0-$X_MAX -n 1) $(shuf -i 0-$Y_MAX -n 1)"
 	;;
 	
-	shake) test -z $H && H=0
-        test -z $W && W=0
-        OFFSET="OFFSET $(shuf -i $W-$(($W+10)) -n 1) $(shuf -i $H-$(($H+10)) -n 1)"
+	shake) OFFSET="OFFSET $(shuf -i $X-$(($X+10)) -n 1) $(shuf -i $Y-$(($Y+10)) -n 1)"
 	;;
 	
 	cursor) OFFSET="OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
@@ -250,32 +248,31 @@ xymode() {
         # 0 means up, 1 means down
         # 
         # handled outsite, in the flootworker()
-        test -z $X_MAX && X_MAX=800
-        test -z $Y_MAX && Y_MAX=600
+
         
         if [ $XDIR == 0 ]
           then
-            SX=$(($SX+$BOUNCESTEP))
-            test $SX -ge $X_MAX && XDIR=1
+            X=$(($X+$BOUNCESTEP))
+            test $X -ge $X_MAX && XDIR=1
           else
-            SX=$(($SX-$BOUNCESTEP))
-            test $SX -eq 0 && XDIR=0
+            X=$(($X-$BOUNCESTEP))
+            test $X -eq 0 && XDIR=0
         fi
         
         if [ $YDIR == 0 ]
           then
-            SY=$(($SY+$BOUNCESTEP))
-            test $SY -ge $Y_MAX && YDIR=1
+            Y=$(($Y+$BOUNCESTEP))
+            test $Y -ge $Y_MAX && YDIR=1
           else
-            SY=$(($SY-$BOUNCESTEP))
-            test $SY -eq 0 && YDIR=0
+            Y=$(($Y-$BOUNCESTEP))
+            test $Y -eq 0 && YDIR=0
         fi
-        OFFSET="OFFSET $SX $SY"
+        OFFSET="OFFSET $X $Y"
   ;;
 
-	static|*) test -z $H && H=0
-        test -z $W && W=0
-        OFFSET="OFFSET $W $H"
+	static|*) test -z $X && X=0
+        test -z $Y && Y=0
+        OFFSET="OFFSET $X $Y"
 	;;	
 	esac
 	#
@@ -352,15 +349,12 @@ floot() {
   fill)
     message "generating color field with ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
     LOL_org="$(gen_field)"
-		for i in $(seq 1 $FLOOTFORKS)
-		do
-			LOL[$i]="$LOL_org"
-		done
+		loadLOL
   ;;
   
   ""|text)
     test -z "$TEXT" && TEXT="$0"
-    test -z "$TEXTSIZE" && TEXTSIZE=42
+    test -z "$FONTSIZE" && FONTSIZE=42
     test -z "$COLOR" && COLOR="000000"
     test -z "$BGCOLOR" && BGCOLOR="FFFFFF"
     
@@ -370,8 +364,8 @@ floot() {
     
     fi
     #convert -fill lightgreen  -background white -pointsize 40 caption:"KARTTUR" -quality 72  DstImage.png
-    message "generating text, size $TEXTSIZE for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
-    LOL_org="$(convert ${SIZE} +antialias -depth 8 -fill \#${COLOR}  -background \#${BGCOLOR} -pointsize ${TEXTSIZE} caption:"${TEXT}" -quality 72  txt: | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /')"
+    message "generating text, size $FONTSIZE for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
+    LOL_org="$(convert ${SIZE} +antialias -depth 8 -fill \#${COLOR}  -background \#${BGCOLOR} -pointsize ${FONTSIZE} caption:"${TEXT}" -quality 72  txt: | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /')"
     
     loadLOL
   ;;
@@ -449,11 +443,11 @@ case $1 in
 	;;
 		
 	floot) message "flooting ${YELLOW}${IPFLOOT}:${FLOOTPORT}${ENDCOLOR}"
-		if [ "$SHUFMODE" == "static" ] && ([ -z "$W" ] && [ -z "$H" ])
-         then
-           echo "please specify coords with e.g. 'W=420 H=420 SHUFMODE=static $0 floot $FNAME" >&2
-           exit 1
-         fi
+		#~ if [ "$SHUFMODE" == "static" ] && ([ -z "$X" ] && [ -z "$Y" ])
+         #~ then
+           #~ echo "please specify coords with e.g. 'W=420 H=420 SHUFMODE=static $0 floot $FNAME" >&2
+           #~ exit 1
+         #~ fi
          #~ message "request board size from ${YELLOW}${IPFLOOT}:${FLOOTPORT}${ENDCOLOR}"
          #~ exec 5<>/dev/tcp/$IPFLOOT/$FLOOTPORT
          #~ echo "SIZE" >&5
@@ -486,17 +480,28 @@ case $1 in
 	;;
 	*)
 		echo "$0 [floot|convertimg] [FILENAME|fill|text] ([MODE])"
-    echo "MODE: static (env \$H and \$W for position)"
-    echo "      chaos (env \$H and \$W for position range)"
-		echo "      shake (env \$H and \$W for position range)"
+    echo ""
+    echo "floot: flooting the target specified with IPFLOOT"
+    echo "convertimg: converts an image to a command list file in /tmp"
+    echo "            to use it, start 'USECACHE=true $0 floot [FILENAME]', where FILENAME"
+    echo "            is the original image file."
+    echo ""
+    echo "FILENAME: path to any picture imagemagick can handle"
+    echo "fill: create a filled area with (env COLOR, W (width), H (height), X, Y)"
+    echo "text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR)"
+    echo ""
+    echo "MODE: static (env \$X and \$Y for position)"
+    echo "      chaos (env \$X_MAX and \$Y_MAX for position range)"
+		echo "      shake (env \$X and \$Y for position range)"
     echo "      cursor"
     echo "      bounce (env \$Y_MAX and \$X_MAX for max bounce range)"
     echo ""
     echo "available env vars to configure:"
-    echo "RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)"
-    echo "SIZE(int), TEXT(string), TEXTSIZE(int), BGCOLOR(hex), COLOR(hex)"
-    echo "X_MAX(int), Y_MAX(int)"
-    echo "IPFLOOT(string), FLOOTPORT(string), USECACHE(bool)"
+    echo "IPFLOOT(string), FLOOTPORT(int), USECACHE(bool), FLOOTFORKS(int)"
+    echo "SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)"
+    echo "X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)"
+    echo "RESIZE(int), ALPHACOLOR(hex)"
+    
     exit 1
 		;;
 	esac
