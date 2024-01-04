@@ -210,10 +210,7 @@ convertimg() {
     
   fi
   
-  while read -r LINE
-  do
-    echo "PX $LINE"
-  done < <(convert $IMGFILE $RESIZE txt:  | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//')
+  convert $IMGFILE $RESIZE txt:  | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /'
 }
 
 #~ generate_text() {
@@ -237,6 +234,27 @@ shuf_xy() {
 	cursor) command -v xdotool || message error "${YELLOW}xdotool${ENDCOLOR} not found"
           echo "OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
 	;;
+  
+  bounce) test -z $X_MAX && X_MAX=800
+        test -z $Y_MAX && Y_MAX=600
+        
+       
+        if [ $sx -le $X_MAX ]
+        then
+          sx=$((sx+1))
+        else
+          sx=$((sx-1))
+        fi
+        
+        if [ $sy -le $Y_MAX ]
+        then
+          sy=$((sy+1))
+        else
+          sy=$((sy-1))
+        fi
+        
+        echo "OFFSET $sx $sy"
+  ;;
 
 	static|*) test -z $H && H=0
         test -z $W && W=0
