@@ -395,9 +395,7 @@ floot() {
 	   LOL_org="$(convertimg)"
      #convertimg > $PIXLIST
     fi
-    
-		for i in $(seq 1 $FLOOTFORKS)
-		do
+
 		  #LOL[$i]="OFFSET 1 200"
 		  #LOL[$i]="OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-920 -n 1)"
 	#	  LOL[$i]="$(shuf_xy)"
@@ -408,7 +406,6 @@ floot() {
       loadLOL
       #set +x 
       message "${GREEN}DONE!${ENDCOLOR}"
-		done
   ;;
   esac
 	
