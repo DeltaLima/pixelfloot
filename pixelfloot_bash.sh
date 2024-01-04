@@ -212,11 +212,7 @@ done
 
 
 convertimg() {
-  if ! command -v convert > /dev/null
-  then
-    message error "${YELLOW}convert${ENDCOLOR} not found"
-    exit 1
-  fi
+  
   if [ -n "$RESIZE" ]
   then
     RESIZE="-resize $RESIZE"
@@ -475,10 +471,15 @@ case $1 in
           fi
           ;;
          *)
-          message "all requirements satisfied ${GREEN}:)${ENDCOLOR}"
+          
           ;;
         esac
-        
+        if ! command -v convert > /dev/null
+        then
+          message error "${YELLOW}convert${ENDCOLOR} not found"
+          exit 1
+        fi
+        message "all requirements satisfied ${GREEN}:)${ENDCOLOR}"
         floot
 	;;
 	*)
