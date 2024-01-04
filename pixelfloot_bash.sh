@@ -21,6 +21,15 @@ FLOOTSRUNNING=0
 
 test -z "$FLOOTFORKS" && FLOOTFORKS="2"
 
+## bounce
+SX=0
+SY=0
+XDIR=0
+YDIR=0
+XORY=0
+
+## end bounce
+
 declare -a PIXMAP
 declare -a LOL
 declare -a LOLPID
@@ -217,11 +226,7 @@ convertimg() {
   
 #~ }
 
-sx=0
-sy=0
-xdir=0
-ydir=0
-xory=0
+
 shuf_xy() {
 	case $SHUFMODE in
 	chaos) test -z $H && H=640
@@ -238,44 +243,16 @@ shuf_xy() {
           echo "OFFSET $(xdotool getmouselocation | tr ':' ' '|awk '{print $2 " " $4}')"
 	;;
   
-  bounce) 
-        set -x 
-        test -z $X_MAX && X_MAX=800
-        test -z $Y_MAX && Y_MAX=600
-        
+  bounce)       
         # every call is a run in a loop
         # in every run we count x or y alternativ one up or down
         # we decide with with var 'xory', 0 is x , 1 is y
         # up or down ist set with 'xdir' and 'ydir'
         # 0 means up, 1 means down
         # 
-        message warn "X $sx Y $sy" >&2
-        
-        if [ $xory == 0 ]
-        then
-          if [ $xdir == 0 ]
-          then
-            sx=$(($sx+1))
-            test $sx -ge $X_MAX && xdir=1
-          else
-            sx=$(($sx-1))
-            test $sx -eq 0 && xdir=0
-          fi
-          xory=1
-        else
-          if [ $ydir == 0 ]
-          then
-            sy=$(($sy+1))
-            test $sy -ge $Y_MAX && ydir=1
-          else
-            sy=$(($sy-1))
-            test $sy -eq 0 && ydir=0
-          fi
-          xory=0
-        fi
-        
-        echo "OFFSET $sx $sy"
-        set +x
+        # handled outsite, in the flootworker()
+      
+        echo "OFFSET $1 $2"
   ;;
 
 	static|*) test -z $H && H=0
@@ -303,7 +280,37 @@ flootworker()
 	do
 		#FLOOTSRUNNING=$((FLOOTSRUNNING+1))
     #test $FLOOTSRUNNING -le $FLOOTFORKS && 
-    echo "$(shuf_xy)
+    if [ "$SHUFMODE" == "bounce" ]
+    then
+
+        test -z $X_MAX && X_MAX=800
+        test -z $Y_MAX && Y_MAX=600
+        
+        if [ $XORY == 0 ]
+        then
+          if [ $XDIR == 0 ]
+          then
+            SX=$(($SX+5))
+            test $SX -ge $X_MAX && XDIR=1
+          else
+            SX=$(($SX-5))
+            test $SX -eq 0 && XDIR=0
+          fi
+          XORY=1
+        else
+          if [ $YDIR == 0 ]
+          then
+            SY=$(($SY+5))
+            test $SY -ge $Y_MAX && YDIR=1
+          else
+            SY=$(($SY-5))
+            test $SY -eq 0 && YDIR=0
+          fi
+          XORY=0
+        fi
+    fi
+
+    echo "$(shuf_xy $SX $SY)
 ${LOL[$i]}" > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "transmission in worker ${YELLOW}$1${ENDCOLOR} ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
     #FLOOTSRUNNING=$((FLOOTSRUNNING-1))
 				#echo "${LOL[$i]}" > /dev/tcp/127.0.0.1/1337 &
@@ -340,7 +347,7 @@ floot() {
 		do
 			LOL[$i]="$LOL_org"
 		done
-	elif [ "$FNAME" == "text" ]
+	elif [ "$FNAME" == "text" ] || [ -z "$FNAME" ]
   then
     test -z "$TEXT" && TEXT="pixelfloot"
     test -z "$TEXTSIZE" && TEXTSIZE=42
@@ -472,10 +479,12 @@ case $1 in
     echo "      chaos (env \$H and \$W for position range)"
 		echo "      shake (env \$H and \$W for position range)"
     echo "      cursor"
+    echo "      bounce (env \$Y_MAX and \$X_MAX for max bounce range)"
     echo ""
     echo "available env vars to configure:"
     echo "RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)"
     echo "SIZE(int), TEXT(string), TEXTSIZE(int), BGCOLOR(hex), COLOR(hex)"
+    echo "X_MAX(int), Y_MAX(int)"
     echo "IPFLOOT(string), FLOOTPORT(string), USECACHE(bool)"
     exit 1
 		;;
