@@ -39,7 +39,8 @@ convertimg: converts an image to a command list file in /tmp
 FILENAME: path to any picture imagemagick can handle (env X, Y, RESIZE, 
           BORDERCOLOR, ALPHACOLOR)
 fill: create a filled area with (env COLOR, W (width), H (height), X, Y)
-text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR, BORDERCOLOR)
+text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR, BORDERCOLOR
+      ALPHACOLOR)
 
 MODE: static (env X and Y for position)
       chaos (env X_MAX and Y_MAX for position range)
