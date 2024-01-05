@@ -294,17 +294,19 @@ flootworker()
 {  
   while true
 	do
-		#FLOOTSRUNNING=$((FLOOTSRUNNING+1))
-    #test $FLOOTSRUNNING -le $FLOOTFORKS && 
-
-    xymode
-    echo "$OFFSET
-${LOL[$1]}" #> /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "transmission in worker ${YELLOW}$1${ENDCOLOR} ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
-    #FLOOTSRUNNING=$((FLOOTSRUNNING-1))
-				#echo "${LOL[$i]}" > /dev/tcp/127.0.0.1/1337 &
-				
-        #echo "worker $i PID ${LOLPID[$i]}"
-
+    if [ $LARGE ] 
+    then
+      xymode
+      echo "$OFFSET"
+      for i in $(seq 0 $1 | shuf)
+      do
+        echo "${LOL[$i]}"     
+      done
+    else
+      xymode
+      echo "$OFFSET
+${LOL[$1]}"
+    fi
 	done > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "transmission in worker ${YELLOW}$1${ENDCOLOR} ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
 }
 
@@ -324,25 +326,27 @@ loadLOL() {
    # max 64k each one
    if [ $LARGE ] 
    then
-    FIELDSIZE=64000
+    LOL_org="$(echo "$LOL_org" | shuf)"
+    LOLFIELDSIZE=64000
     # line counter
     L=1    
     LINES="$(echo "$LOL_org" | wc -l )"
-    FIELDS="$(( ( $LINES / $FIELDSIZE ) ))"
-    message "LARGE mode: slicing ${YELLOW}${IMGFILE}${ENDCOLOR} - ${YELLOW}${LINES}${ENDCOLOR} into ${YELLOW}${FIELDS}${ENDCOLOR} fields"
+    LOLFIELDS="$(( ( $LINES / $LOLFIELDSIZE ) ))"
+    message "LARGE mode: slicing ${YELLOW}${IMGFILE}${ENDCOLOR} - ${YELLOW}${LINES}${ENDCOLOR} into ${YELLOW}${LOLFIELDS}${ENDCOLOR} fields"
     
     i=0
-    while [ $i -le $FIELDS ]
+    while [ $i -le $LOLFIELDS ]
     do
-            LN=$(($L+$FIELDSIZE+1))
+            LN=$(($L+$LOLFIELDSIZE+1))
             message "field ${YELLOW}${i}${ENDCOLOR}, lines ${YELLOW}${L}${ENDCOLOR} - ${YELLOW}${LN}${ENDCOLOR}"
             LOL[$i]="$(echo "$LOL_org" | sed -n "${L},$(($LN-1))p;${LN}q" )"
             L=$LN
             
             i=$(($i+1))
     done
-    echo STOP
-    read
+    #~ echo "${LOL[14]}"
+    #~ echo STOP
+    #~ read
     
     
    else
@@ -439,28 +443,31 @@ floot() {
 	
   message "starting $FLOOTFORKS workers"
   
-  if [ $LARGE ]
-  then
-    echo lol
-  else
-    while true
-    do
-      for i in $(seq $FLOOTFORKS) 
-        do
-          #echo "check worker $i PID ${LOLPID[$i]} if running "
-          if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
-          then
-            message "worker ${YELLOW}$i${ENDCOLOR} is not running, starting it"
-            #if [ "$FLOOTSRUNNING" -le "$FLOOTFORKS" ]
-            #then
+
+  while true
+  do
+    for i in $(seq $FLOOTFORKS) 
+      do
+        #echo "check worker $i PID ${LOLPID[$i]} if running "
+        if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
+        then
+          message "worker ${YELLOW}$i${ENDCOLOR} is not running, starting it"
+          #if [ "$FLOOTSRUNNING" -le "$FLOOTFORKS" ]
+          #then
+            if [ $LARGE ]
+            then
+              flootworker $LOLFIELDS &
+              LOLPID[$i]=$!
+            else
               flootworker $i &
               LOLPID[$i]=$!
-            #fi
-            
-          fi
-      done
+            fi
+          #fi
+          
+        fi
     done
-  fi
+  done
+
 }
 
 case $1 in
