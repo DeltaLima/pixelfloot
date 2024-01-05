@@ -405,7 +405,7 @@ floot() {
 
     #convert -fill lightgreen  -background white -pointsize 40 caption:"KARTTUR" -quality 72  DstImage.png
     message "generating text, size $FONTSIZE for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
-
+    message "TEXT: ${YELLOW}${TEXT}${ENDCOLOR}"
     LOL_org="$(convert ${SIZE} ${BORDER} +antialias -depth 8 -fill \#${COLOR}  -background \#${BGCOLOR} -pointsize ${FONTSIZE} caption:"${TEXT}" -quality 72  txt: | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /')"
     
     loadLOL
