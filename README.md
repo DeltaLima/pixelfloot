@@ -23,6 +23,7 @@ pixelfloot was built during the 37c3. in its actual state, its just a mess. I ho
   - define your own background color: `BGCOLOR=0000FF SIZE=240 TEXT="colors, yeah!" ./pixelfloot_bash.sh floot text`
 - increase No of concurrent connections: `FLOOTFORKS=8 ./pixelfloot_bash.sh floot images/lucky-cat.jpg`
 - specify IP and PORT: `IPFLOOT=127.0.0.1 FLOOTPORT=1337 ./pixelfloot_bash.sh floot images/lucky-cat.jpg`
+- for drawing big areas, like 1280x720, use LARGE mode: `LARGE=true ./pixelfloot_bash.sh floot images/xphg.jpg`
 
 ```shell
 $ ./pixelfloot_bash.sh help
