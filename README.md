@@ -44,7 +44,7 @@ text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR, BORDERCOLOR
 
 MODE: static (env X and Y for position)
       chaos (env X_MAX and Y_MAX for position range)
-      shake (env X and Y for position range)
+      shake (env X and Y for position)
       cursor
       bounce (env Y_MAX and X_MAX for max bounce range, BOUNCESTEP for step size)
 

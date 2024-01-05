@@ -544,7 +544,7 @@ case $1 in
     echo ""
     echo "MODE: static (env X and Y for position)"
     echo "      chaos (env X_MAX and Y_MAX for position range)"
-		echo "      shake (env X and Y for position range)"
+		echo "      shake (env X and Y for position)"
     echo "      cursor"
     echo "      bounce (env Y_MAX and X_MAX for max bounce range, BOUNCESTEP for step size)"
     echo ""
