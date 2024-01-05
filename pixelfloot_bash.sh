@@ -320,6 +320,32 @@ checkfile() {
 
 loadLOL() {
    
+   # when LARGE true, then we slize the large pixlist into smaller pieces
+   # max 64k each one
+   if [ $LARGE ] 
+   then
+    FIELDSIZE=64000
+    # line counter
+    L=1    
+    LINES="$(echo "$LOL_org" | wc -l )"
+    FIELDS="$(( ( $LINES / $FIELDSIZE ) ))"
+    message "LARGE mode: slicing ${YELLOW}${IMGFILE}${ENDCOLOR} - ${YELLOW}${LINES}${ENDCOLOR} into ${YELLOW}${FIELDS}${ENDCOLOR} fields"
+    
+    i=0
+    while [ $i -le $FIELDS ]
+    do
+            LN=$(($L+$FIELDSIZE+1))
+            message "field ${YELLOW}${i}${ENDCOLOR}, lines ${YELLOW}${L}${ENDCOLOR} - ${YELLOW}${LN}${ENDCOLOR}"
+            LOL[$i]="$(echo "$LOL_org" | sed -n "${L},$(($LN-1))p;${LN}q" )"
+            L=$LN
+            
+            i=$(($i+1))
+    done
+    echo STOP
+    read
+    
+    
+   else
     for i in $(seq 1 $FLOOTFORKS)
       do
         if [ -z "$ALPHACOLOR" ]
@@ -331,6 +357,8 @@ loadLOL() {
           LOL[$i]="$(echo "$LOL_org" | grep -v $ALPHACOLOR | shuf)"
         fi
       done 
+      
+    fi
 
 }
 
@@ -410,23 +438,29 @@ floot() {
   esac
 	
   message "starting $FLOOTFORKS workers"
-  while true
-  do
-    for i in $(seq $FLOOTFORKS) 
-      do
-        #echo "check worker $i PID ${LOLPID[$i]} if running "
-        if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
-        then
-          message "worker ${YELLOW}$i${ENDCOLOR} is not running, starting it"
-          #if [ "$FLOOTSRUNNING" -le "$FLOOTFORKS" ]
-          #then
-            flootworker $i &
-            LOLPID[$i]=$!
-          #fi
-          
-        fi
+  
+  if [ $LARGE ]
+  then
+    echo lol
+  else
+    while true
+    do
+      for i in $(seq $FLOOTFORKS) 
+        do
+          #echo "check worker $i PID ${LOLPID[$i]} if running "
+          if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
+          then
+            message "worker ${YELLOW}$i${ENDCOLOR} is not running, starting it"
+            #if [ "$FLOOTSRUNNING" -le "$FLOOTFORKS" ]
+            #then
+              flootworker $i &
+              LOLPID[$i]=$!
+            #fi
+            
+          fi
+      done
     done
-  done
+  fi
 }
 
 case $1 in
@@ -511,7 +545,7 @@ case $1 in
     echo "IPFLOOT(string), FLOOTPORT(int), USECACHE(bool), FLOOTFORKS(int)"
     echo "SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)"
     echo "BORDERCOLOR(hex), X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)"
-    echo "RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int)"
+    echo "RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int), LARGE(bool)"
     
     exit 1
 		;;
