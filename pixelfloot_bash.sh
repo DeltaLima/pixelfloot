@@ -36,6 +36,7 @@ declare -a PIXMAP
 declare -a LOL
 declare -a LOLPID
 
+
 # colors for colored output 8)
 RED="\e[31m"
 GREEN="\e[32m"
@@ -221,7 +222,7 @@ convertimg() {
     
   fi
   
-  convert $IMGFILE $RESIZE txt:  | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /'
+  convert $IMGFILE $BORDER $RESIZE txt:  | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /'
 }
 
 #~ generate_text() {
@@ -334,7 +335,12 @@ loadLOL() {
 }
 
 floot() {
-	
+  if [ -n "$BORDERCOLOR" ]
+  then
+    BORDER="-bordercolor #${BORDERCOLOR} -border 2x2"
+  else
+    BORDER=""
+  fi
   
   case $FNAME in
   # small stupid animation, two alternating images
@@ -365,12 +371,7 @@ floot() {
     
     fi
     
-    if [ -n "$BORDERCOLOR" ]
-    then
-      BORDER="-bordercolor #${BORDERCOLOR} -border 2x2"
-    else
-      BORDER=""
-    fi
+
     #convert -fill lightgreen  -background white -pointsize 40 caption:"KARTTUR" -quality 72  DstImage.png
     message "generating text, size $FONTSIZE for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
     set +x
@@ -495,7 +496,8 @@ case $1 in
     echo "            to use it, start 'USECACHE=true $0 floot [FILENAME]', where FILENAME"
     echo "            is the original image file."
     echo ""
-    echo "FILENAME: path to any picture imagemagick can handle"
+    echo "FILENAME: path to any picture imagemagick can handle (env X, Y, RESIZE, "
+    echo "          BORDERCOLOR, ALPHACOLOR)"
     echo "fill: create a filled area with (env COLOR, W (width), H (height), X, Y)"
     echo "text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR, BORDERCOLOR)"
     echo ""

@@ -33,7 +33,8 @@ convertimg: converts an image to a command list file in /tmp
             to use it, start 'USECACHE=true ./pixelfloot_bash.sh floot [FILENAME]', where FILENAME
             is the original image file.
 
-FILENAME: path to any picture imagemagick can handle
+FILENAME: path to any picture imagemagick can handle (env X, Y, RESIZE, 
+          BORDERCOLOR, ALPHACOLOR)
 fill: create a filled area with (env COLOR, W (width), H (height), X, Y)
 text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR, BORDERCOLOR)
 
