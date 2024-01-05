@@ -353,6 +353,7 @@ floot() {
   ;;
   
   ""|text)
+  set -x 
     test -z "$TEXT" && TEXT="$0"
     test -z "$FONTSIZE" && FONTSIZE=42
     test -z "$COLOR" && COLOR="000000"
@@ -363,9 +364,17 @@ floot() {
       SIZE="-size $SIZE"
     
     fi
+    
+    if [ -n "$BORDERCOLOR" ]
+    then
+      BORDER="-bordercolor #${BORDERCOLOR} -border 2x2"
+    else
+      BORDER=""
+    fi
     #convert -fill lightgreen  -background white -pointsize 40 caption:"KARTTUR" -quality 72  DstImage.png
     message "generating text, size $FONTSIZE for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
-    LOL_org="$(convert ${SIZE} +antialias -depth 8 -fill \#${COLOR}  -background \#${BGCOLOR} -pointsize ${FONTSIZE} caption:"${TEXT}" -quality 72  txt: | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /')"
+    set +x
+    LOL_org="$(convert ${SIZE} ${BORDER} +antialias -depth 8 -fill \#${COLOR}  -background \#${BGCOLOR} -pointsize ${FONTSIZE} caption:"${TEXT}" -quality 72  txt: | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /')"
     
     loadLOL
   ;;
@@ -488,7 +497,7 @@ case $1 in
     echo ""
     echo "FILENAME: path to any picture imagemagick can handle"
     echo "fill: create a filled area with (env COLOR, W (width), H (height), X, Y)"
-    echo "text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR)"
+    echo "text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR, BORDERCOLOR)"
     echo ""
     echo "MODE: static (env X and Y for position)"
     echo "      chaos (env X_MAX and Y_MAX for position range)"
@@ -499,7 +508,7 @@ case $1 in
     echo "available env vars to configure:"
     echo "IPFLOOT(string), FLOOTPORT(int), USECACHE(bool), FLOOTFORKS(int)"
     echo "SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)"
-    echo "X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)"
+    echo "BORDERCOLOR(hex), X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)"
     echo "RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int)"
     
     exit 1

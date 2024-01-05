@@ -35,7 +35,7 @@ convertimg: converts an image to a command list file in /tmp
 
 FILENAME: path to any picture imagemagick can handle
 fill: create a filled area with (env COLOR, W (width), H (height), X, Y)
-text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR)
+text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR, BORDERCOLOR)
 
 MODE: static (env X and Y for position)
       chaos (env X_MAX and Y_MAX for position range)
@@ -46,7 +46,7 @@ MODE: static (env X and Y for position)
 available env vars to configure:
 IPFLOOT(string), FLOOTPORT(int), USECACHE(bool), FLOOTFORKS(int)
 SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)
-X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)
+BORDERCOLOR(hex), X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)
 RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int)
 ```
 
