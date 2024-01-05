@@ -7,33 +7,33 @@ pixelfloot was built during the 37c3. in its actual state, its just a mess. I ho
 
 ## examples
 
-- Display image: `./pixelfloot_bash.sh floot images/lucky-cat.jpg`
-  - set position: `X=1337 Y=420 ./pixelfloot_bash.sh floot images/lucky-cat.jpg`
-- image random position: `./pixelfloot_bash.sh floot images/lucky-cat.jpg chaos`
-  - wider "chaos-radio": `X_MAX=1000 Y_MAX=600 ./pixelfloot_bash.sh floot images/lucky-cat.jpg chaos`
-- image shake position: `./pixelfloot_bash.sh floot images/lucky-cat.jpg shake`
-  - set the position  : `X=420 Y=420 ./pixelfloot_bash.sh floot images/lucky-cat.jpg shake`
-- image bounce across screen: `./pixelfloot_bash.sh floot images/lucky-cat.jpg bounce`
-  - can set the "bounce-radius": `X_MAX=1000 Y_MAX=500 ./pixelfloot_bash.sh floot images/lucky-cat.jpg bounce`
-- move image with your cursor (needs `xdotool`): `./pixelfloot_bash.sh floot images/lucky-cat.jpg cursor`
-- Use a color as "alpha" (remove background): `ALPHACOLOR=FF00FF ./pixelfloot_bash.sh floot images/cursor.ppm cursor`
-- write text: `TEXT="pixelflut makes a lot of fun! :)" ./pixelfloot_bash.sh floot text`
-  - set the size of the Textbox and the textcolor: `COLOR=FF00FF SIZE=240 TEXT="colors, yeah!" ./pixelfloot_bash.sh floot text`
-  - you can also use ALPHACOLOR here, or set your: `ALPHACOLOR=000000 TEXT="colors, yeah!" ./pixelfloot_bash.sh floot text`
-  - define your own background color: `BGCOLOR=0000FF SIZE=240 TEXT="colors, yeah!" ./pixelfloot_bash.sh floot text`
-- increase No of concurrent connections: `FLOOTFORKS=8 ./pixelfloot_bash.sh floot images/lucky-cat.jpg`
-- specify IP and PORT: `IPFLOOT=127.0.0.1 FLOOTPORT=1337 ./pixelfloot_bash.sh floot images/lucky-cat.jpg`
-- for drawing big areas, like 1280x720, use LARGE mode: `LARGE=true ./pixelfloot_bash.sh floot images/xphg.jpg`
+- Display image: `./pixelfloot.sh floot images/lucky-cat.jpg`
+  - set position: `X=1337 Y=420 ./pixelfloot.sh floot images/lucky-cat.jpg`
+- image random position: `./pixelfloot.sh floot images/lucky-cat.jpg chaos`
+  - wider "chaos-radio": `X_MAX=1000 Y_MAX=600 ./pixelfloot.sh floot images/lucky-cat.jpg chaos`
+- image shake position: `./pixelfloot.sh floot images/lucky-cat.jpg shake`
+  - set the position  : `X=420 Y=420 ./pixelfloot.sh floot images/lucky-cat.jpg shake`
+- image bounce across screen: `./pixelfloot.sh floot images/lucky-cat.jpg bounce`
+  - can set the "bounce-radius": `X_MAX=1000 Y_MAX=500 ./pixelfloot.sh floot images/lucky-cat.jpg bounce`
+- move image with your cursor (needs `xdotool`): `./pixelfloot.sh floot images/lucky-cat.jpg cursor`
+- Use a color as "alpha" (remove background): `ALPHACOLOR=FF00FF ./pixelfloot.sh floot images/cursor.ppm cursor`
+- write text: `TEXT="pixelflut makes a lot of fun! :)" ./pixelfloot.sh floot text`
+  - set the size of the Textbox and the textcolor: `COLOR=FF00FF SIZE=240 TEXT="colors, yeah!" ./pixelfloot.sh floot text`
+  - you can also use ALPHACOLOR here, or set your: `ALPHACOLOR=000000 TEXT="colors, yeah!" ./pixelfloot.sh floot text`
+  - define your own background color: `BGCOLOR=0000FF SIZE=240 TEXT="colors, yeah!" ./pixelfloot.sh floot text`
+- increase No of concurrent connections: `FLOOTFORKS=8 ./pixelfloot.sh floot images/lucky-cat.jpg`
+- specify IP and PORT: `IPFLOOT=127.0.0.1 FLOOTPORT=1337 ./pixelfloot.sh floot images/lucky-cat.jpg`
+- for drawing big areas, like 1280x720, use LARGE mode: `LARGE=true ./pixelfloot.sh floot images/xphg.jpg`
   - default field size are 64k lines. You can adjust it with LOLFIELDSIZE:
-    `LOLFIELDSIZE=16000 LARGE=true ./pixelfloot_bash.sh floot images/xphg.jpg`
+    `LOLFIELDSIZE=16000 LARGE=true ./pixelfloot.sh floot images/xphg.jpg`
 
 ```shell
-$ ./pixelfloot_bash.sh help
-./pixelfloot_bash.sh [floot|convertimg] [FILENAME|fill|text] ([MODE])
+$ ./pixelfloot.sh help
+./pixelfloot.sh [floot|convertimg] [FILENAME|fill|text] ([MODE])
 
 floot: flooting the target specified with IPFLOOT
 convertimg: converts an image to a command list file in /tmp
-            to use it, start 'USECACHE=true ./pixelfloot_bash.sh floot [FILENAME]', where FILENAME
+            to use it, start 'USECACHE=true ./pixelfloot.sh floot [FILENAME]', where FILENAME
             is the original image file.
 
 FILENAME: path to any picture imagemagick can handle (env X, Y, RESIZE, 
