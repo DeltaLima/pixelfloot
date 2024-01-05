@@ -327,7 +327,7 @@ loadLOL() {
    if [ $LARGE ] 
    then
     LOL_org="$(echo "$LOL_org" | shuf)"
-    LOLFIELDSIZE=64000
+    test -z "$LOLFIELDSIZE" && LOLFIELDSIZE=64000
     # line counter
     L=1    
     LINES="$(echo "$LOL_org" | wc -l )"
@@ -552,7 +552,7 @@ case $1 in
     echo "IPFLOOT(string), FLOOTPORT(int), USECACHE(bool), FLOOTFORKS(int)"
     echo "SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)"
     echo "BORDERCOLOR(hex), X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)"
-    echo "RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int), LARGE(bool)"
+    echo "RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int), LARGE(bool), LOLFIELDSIZE(int)"
     
     exit 1
 		;;

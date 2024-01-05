@@ -24,6 +24,8 @@ pixelfloot was built during the 37c3. in its actual state, its just a mess. I ho
 - increase No of concurrent connections: `FLOOTFORKS=8 ./pixelfloot_bash.sh floot images/lucky-cat.jpg`
 - specify IP and PORT: `IPFLOOT=127.0.0.1 FLOOTPORT=1337 ./pixelfloot_bash.sh floot images/lucky-cat.jpg`
 - for drawing big areas, like 1280x720, use LARGE mode: `LARGE=true ./pixelfloot_bash.sh floot images/xphg.jpg`
+  - default field size are 64k lines. You can adjust it with LOLFIELDSIZE:
+    `LOLFIELDSIZE=16000 LARGE=true ./pixelfloot_bash.sh floot images/xphg.jpg`
 
 ```shell
 $ ./pixelfloot_bash.sh help
