@@ -27,17 +27,27 @@ pixelfloot was built during the 37c3. in its actual state, its just a mess. I ho
 ```shell
 $ ./pixelfloot_bash.sh help
 ./pixelfloot_bash.sh [floot|convertimg] [FILENAME|fill|text] ([MODE])
-MODE: static (env $H and $W for position)
-      chaos (env $H and $W for position range)
-      shake (env $H and $W for position range)
+
+floot: flooting the target specified with IPFLOOT
+convertimg: converts an image to a command list file in /tmp
+            to use it, start 'USECACHE=true ./pixelfloot_bash.sh floot [FILENAME]', where FILENAME
+            is the original image file.
+
+FILENAME: path to any picture imagemagick can handle
+fill: create a filled area with (env COLOR, W (width), H (height), X, Y)
+text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR)
+
+MODE: static (env X and Y for position)
+      chaos (env X_MAX and Y_MAX for position range)
+      shake (env X and Y for position range)
       cursor
-      bounce (env $Y_MAX and $X_MAX for max bounce range)
+      bounce (env Y_MAX and X_MAX for max bounce range, BOUNCESTEP for step size)
 
 available env vars to configure:
-RESIZE(int), ALPHACOLOR(hex), FLOOTFORKS(int), H(int), W(int)
-SIZE(int), TEXT(string), TEXTSIZE(int), BGCOLOR(hex), COLOR(hex)
-X_MAX(int), Y_MAX(int)
-IPFLOOT(string), FLOOTPORT(string), USECACHE(bool)
+IPFLOOT(string), FLOOTPORT(int), USECACHE(bool), FLOOTFORKS(int)
+SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)
+X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)
+RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int)
 ```
 
 Running on my Ryzen 4700G with [wellenbrecher](https://github.com/bits0rcerer/wellenbrecher) 1280x720 and three workers,

@@ -29,7 +29,7 @@ test -z $Y && Y=0
 ## bounce
 XDIR=0
 YDIR=0
-BOUNCESTEP=2
+test -z "$BOUNCESTEP" && BOUNCESTEP=2
 ## end bounce
 
 declare -a PIXMAP
@@ -490,17 +490,17 @@ case $1 in
     echo "fill: create a filled area with (env COLOR, W (width), H (height), X, Y)"
     echo "text: create a textbox (env TEXT, FONTSIZE, SIZE, COLOR, BGCOLOR)"
     echo ""
-    echo "MODE: static (env \$X and \$Y for position)"
-    echo "      chaos (env \$X_MAX and \$Y_MAX for position range)"
-		echo "      shake (env \$X and \$Y for position range)"
+    echo "MODE: static (env X and Y for position)"
+    echo "      chaos (env X_MAX and Y_MAX for position range)"
+		echo "      shake (env X and Y for position range)"
     echo "      cursor"
-    echo "      bounce (env \$Y_MAX and \$X_MAX for max bounce range)"
+    echo "      bounce (env Y_MAX and X_MAX for max bounce range, BOUNCESTEP for step size)"
     echo ""
     echo "available env vars to configure:"
     echo "IPFLOOT(string), FLOOTPORT(int), USECACHE(bool), FLOOTFORKS(int)"
     echo "SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)"
     echo "X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)"
-    echo "RESIZE(int), ALPHACOLOR(hex)"
+    echo "RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int)"
     
     exit 1
 		;;
