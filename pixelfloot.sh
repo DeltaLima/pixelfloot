@@ -318,12 +318,12 @@ frametick() {
   i=0
   while true
   do
-    echo "$i"  > $FRAMETOPICK_SHM
-    if [ "$i" -gt $LOLFIELDS ]
+    if [ "$i" -lt $LOLFIELDS ]
     then
-      i=0
-    else
+      echo "$i"  > $FRAMETOPICK_SHM
       i=$(($i+1))
+    else
+      i=0
     fi
     sleep $FRAMETICKTIME
   done
