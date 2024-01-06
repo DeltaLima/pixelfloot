@@ -10,8 +10,12 @@ test -z "$IPFLOOT" && IPFLOOT="130.185.104.31"
 test -z "$FLOOTPORT" && FLOOTPORT="1234"
 
 ########################################################################
-FNAME="$(echo $2 | sed -e 's/\..*$//' -e 's/^images\///')"
 IMGFILE="$2"
+# remove file extension 
+FNAME="${2%.*}"
+# remove everything before the slash, so we get the filename without
+# path and extension
+FNAME="${FNAME##*/}"
 PPMFILE="$FNAME.ppm"
 HEXPPM="images/$FNAME.hexppm"
 PIXLIST="/tmp/$FNAME.pixlist"
@@ -248,6 +252,12 @@ done
 
 
 convertimg() {
+  if [ -z "$1" ] 
+  then
+    CONVERTFILE="$IMGFILE"
+  else
+    CONVERTFILE="$1"
+  fi
   
   if [ -n "$RESIZE" ]
   then
@@ -255,7 +265,7 @@ convertimg() {
     
   fi
   
-  convert $IMGFILE $BORDER $RESIZE txt:  | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /'
+  convert $CONVERTFILE $BORDER $RESIZE txt:  | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /'
 }
 
 
@@ -310,12 +320,12 @@ xymode() {
 
 frametick() {
   test -z "$FRAMETICKTIME" && FRAMETICKTIME=0.1
-  LOLFIELDS=12
+  #LOLFIELDS=12
   i=0
   while true
   do
-    echo "$i" #> $FRAMETOPICK_SHM
-    if [ "$i" -ge $LOLFIELDS ]
+    echo "$i"  > $FRAMETOPICK_SHM
+    if [ "$i" -gt $LOLFIELDS ]
     then
       i=0
     else
@@ -342,12 +352,13 @@ flootworker()
     then
       xymode
       echo "$OFFSET"
-      i=0
-      while [ $i -le $1 ]
-      do
-        echo "${LOL[$i]}"
-        i=$(($i+1))
-      done
+      echo "${LOL[$(<${FRAMETOPICK_SHM})]}"
+      #~ i=0
+      #~ while [ $i -le $1 ]
+      #~ do
+        #~ echo "${LOL[$i]}"
+        #~ i=$(($i+1))
+      #~ done
     else
       xymode
       echo "$OFFSET
@@ -378,13 +389,13 @@ loadLOL() {
     L=1    
     LINES="$(echo "$LOL_org" | wc -l )"
     LOLFIELDS="$(( ( $LINES / $LOLFIELDSIZE ) ))"
-    message "LARGE mode: slicing ${YELLOW}${IMGFILE}${ENDCOLOR} - ${YELLOW}${LINES}${ENDCOLOR} into ${YELLOW}${LOLFIELDS}${ENDCOLOR} fields"
+    message "LARGE mode: slicing ${YELLOW}${IMGFILE}${ENDCOLOR} - ${YELLOW}${LINES}${ENDCOLOR} into ${YELLOW}$((${LOLFIELDS}+1))${ENDCOLOR} fields"
     
     i=0
     while [ $i -le $LOLFIELDS ]
     do
       LN=$(($L+$LOLFIELDSIZE+1))
-      message "field ${YELLOW}${i}${ENDCOLOR}, lines ${YELLOW}${L}${ENDCOLOR} - ${YELLOW}${LN}${ENDCOLOR}"
+      message "field ${YELLOW}${i}/${LOLFIELDS}${ENDCOLOR}, lines ${YELLOW}${L}${ENDCOLOR} - ${YELLOW}${LN}${ENDCOLOR}"
       LOL[$i]="$(echo "$LOL_org" | sed -n "${L},$(($LN-1))p;${LN}q" )"
       L=$LN
       
@@ -393,9 +404,26 @@ loadLOL() {
   
   elif [ $ANIMATION ]
   then
+    
+    i=0
+    while  [ $i -lt $LOLFIELDS ]
+    do
+      if [ -z "$ALPHACOLOR" ]
+      then
+        message "load and shuffle pixels for frame ${YELLOW}$((${i}+1))/${LOLFIELDS}${ENDCOLOR}"
+        LOL[$i]="$(convertimg ${ANIFILE}-${i}.png | shuf)"
+      else
+        message "load and shuffle pixels for frame ${YELLOW}$((${i}+1))/${LOLFIELDS}${ENDCOLOR}, remove aplha color ${YELLOW}${ALPHACOLOR}${ENDCOLOR}"
+        LOL[$i]="$(convertimg ${ANIFILE}-${i}.png | grep -v $ALPHACOLOR | shuf)"
+      fi
+
+      #echo "${LOL[$i]}" | head
+      i=$(($i+1))
+    done
     # ani
-    echo ani ani
-    exit 1
+    #~ echo ani ani
+    #~ exit 1
+    
   else
     for i in $(seq 1 $FLOOTFORKS)
       do
@@ -465,7 +493,7 @@ floot() {
       message "ANIMATION mode, checking if ${YELLOW}${IMGFILE}${ENDCOLOR} is an GIF"
       if [ "$(file $IMGFILE |awk '{print $2}')" == "GIF" ]
       then
-        LOLFIELDS="$(identify $IMGFILE | echo $(( $(wc -l) - 1 )) )"
+        LOLFIELDS="$(identify $IMGFILE | wc -l )"
         message "splitting ${YELLOW}${IMGFILE}${ENDCOLOR} up into ${YELLOW}${LOLFIELDS}${ENDCOLOR} frame images"
         convert -coalesce $IMGFILE ${ANIFILE}.png || error
       else
@@ -485,7 +513,7 @@ floot() {
        #convertimg > $PIXLIST
       fi
     fi
-    message "prepare worker ${YELLOW}$i${ENDCOLOR} .."
+    message "prepare worker .."
     #set -x 
     loadLOL
     #set +x 
