@@ -382,14 +382,14 @@ flootworker()
     else
       echo "${LOL[$1]}"
     fi
-	done > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] transmission ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
+	done > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "[worker ${YELLOW}${iFLOOTWORKER}${ENDCOLOR}] transmission ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
 }
 
 checkfile() {
 
-   if [ ! -f $1 ] || [ -z $1 ] 
+   if [ ! -f $1 ] || [ -z $1 ] || [ -d $1 ]
    then
-	   message error "file ${YELLOW}$1${ENDCOLOR} does not exist."
+	   message error "file ${YELLOW}$1${ENDCOLOR} is not a valid file or does not exist."
 	   exit 1
    fi
 
