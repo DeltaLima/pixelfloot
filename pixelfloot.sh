@@ -37,7 +37,7 @@ YDIR=0
 test -z "$BOUNCESTEP" && BOUNCESTEP=2
 ## end bounce
 
-OFFSET_SHM="/dev/shm/pxlflt-offset"
+OFFSET_SHM="/dev/shm/pxlflt-offset-${FNAME}"
 
 ## ANIMATION
 # convert -coalesce animation.gif target.png -> produces target1.png, target2.png, ..
@@ -57,7 +57,7 @@ OFFSET_SHM="/dev/shm/pxlflt-offset"
 # to not draw too fast, there is a sleep in frametick which waits for
 # FRAMETICKTIME seconds. Values are float, down to lowest value 0.001
 # Only one of ANIMATION or LARGE can be true, not both.
-FRAMETOPICK_SHM="/dev/shm/pxlflt-frametopick"
+FRAMETOPICK_SHM="/dev/shm/pxlflt-frametopick-${FNAME}"
 ## END ANIMATION
 
 
@@ -372,7 +372,7 @@ flootworker()
     then
       #~ xymode
       #~ echo "$OFFSET"
-      echo "${LOL[$(<${FRAMETOPICK_SHM})]}"
+      echo "${LOL[$(< ${FRAMETOPICK_SHM})]}"
       #~ i=0
       #~ while [ $i -le $1 ]
       #~ do
