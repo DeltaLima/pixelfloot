@@ -444,7 +444,7 @@ floot() {
   fi
   if [ -n "$RESIZE" ]
   then
-    message "resizing to $RESIZE px"
+    message "resizing to ${YELLOW}${RESIZE}px${ENDCOLOR}"
     RESIZE="-resize $RESIZE"
   fi
   
@@ -459,7 +459,7 @@ floot() {
   ;;
   
   fill)
-    message "generating color field with ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
+    message "generating color field with ${YELLOW}${FLOOTFORKS}${ENDCOLOR} workers"
     LOL_org="$(gen_field)"
 		loadLOL
   ;;
