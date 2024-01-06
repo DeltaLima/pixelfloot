@@ -419,7 +419,7 @@ floot() {
     then
 	   checkfile $PIXLIST
 	   message "using cache from ${YELLOW}$PIXLIST${ENDCOLOR}"
-     LOL_org="$(cat $PIXLIST)"
+     LOL_org="$(< $PIXLIST)"
     else
 	   checkfile $IMGFILE
 	   message "convertimg image file ${YELLOW}${IMGFILE}${ENDCOLOR}"
