@@ -15,6 +15,7 @@ IMGFILE="$2"
 PPMFILE="$FNAME.ppm"
 HEXPPM="images/$FNAME.hexppm"
 PIXLIST="/tmp/$FNAME.pixlist"
+ANIFILE="/tmp/$FNAME"
 SHUFMODE="$3"
 
 FLOOTSRUNNING=0
@@ -50,7 +51,7 @@ test -z "$BOUNCESTEP" && BOUNCESTEP=2
 # to not draw too fast, there is a sleep in frametick which waits for
 # FRAMETICKTIME seconds. Values are float, down to lowest value 0.001
 # Only one of ANIMATION or LARGE can be true, not both.
-FRAMETICK_SHM="/dev/shm/frametick"
+FRAMETOPICK_SHM="/dev/shm/pxlflt-frametopick"
 ## END ANIMATION
 
 
@@ -60,6 +61,13 @@ declare -a PIXMAP
 
 declare -a LOL
 declare -a LOLPID
+
+## TODOS
+# 
+# - Put OFFSET into /dev/shm/ so each worker do not have to count OFFSET
+#   for itself and we prevent worker from drifting apart when drawing. 
+# - get dimensions of pic with "identify" (imagemagick part)
+# - get dimensions of the pixelflut board 
 
 
 # colors for colored output 8)
@@ -302,10 +310,18 @@ xymode() {
 
 frametick() {
   test -z "$FRAMETICKTIME" && FRAMETICKTIME=0.1
+  LOLFIELDS=12
+  i=0
   while true
   do
-    echo lol
-    exit 1
+    echo "$i" #> $FRAMETOPICK_SHM
+    if [ "$i" -ge $LOLFIELDS ]
+    then
+      i=0
+    else
+      i=$(($i+1))
+    fi
+    sleep $FRAMETICKTIME
   done
   
 }
@@ -321,6 +337,16 @@ flootworker()
       for i in $(seq 0 $1 | shuf)
       do
         echo "${LOL[$i]}"     
+      done
+    elif [ $ANIMATION ]
+    then
+      xymode
+      echo "$OFFSET"
+      i=0
+      while [ $i -le $1 ]
+      do
+        echo "${LOL[$i]}"
+        i=$(($i+1))
       done
     else
       xymode
@@ -342,10 +368,10 @@ checkfile() {
 
 loadLOL() {
    
-   # when LARGE true, then we slize the large pixlist into smaller pieces
-   # max 64k each one
-   if [ $LARGE ] 
-   then
+  # when LARGE true, then we slize the large pixlist into smaller pieces
+  # max 64k each one
+  if [ $LARGE ] 
+  then
     LOL_org="$(echo "$LOL_org" | shuf)"
     test -z "$LOLFIELDSIZE" && LOLFIELDSIZE=64000
     # line counter
@@ -357,15 +383,20 @@ loadLOL() {
     i=0
     while [ $i -le $LOLFIELDS ]
     do
-            LN=$(($L+$LOLFIELDSIZE+1))
-            message "field ${YELLOW}${i}${ENDCOLOR}, lines ${YELLOW}${L}${ENDCOLOR} - ${YELLOW}${LN}${ENDCOLOR}"
-            LOL[$i]="$(echo "$LOL_org" | sed -n "${L},$(($LN-1))p;${LN}q" )"
-            L=$LN
-            
-            i=$(($i+1))
+      LN=$(($L+$LOLFIELDSIZE+1))
+      message "field ${YELLOW}${i}${ENDCOLOR}, lines ${YELLOW}${L}${ENDCOLOR} - ${YELLOW}${LN}${ENDCOLOR}"
+      LOL[$i]="$(echo "$LOL_org" | sed -n "${L},$(($LN-1))p;${LN}q" )"
+      L=$LN
+      
+      i=$(($i+1))
     done
-    
-   else
+  
+  elif [ $ANIMATION ]
+  then
+    # ani
+    echo ani ani
+    exit 1
+  else
     for i in $(seq 1 $FLOOTFORKS)
       do
         if [ -z "$ALPHACOLOR" ]
@@ -378,7 +409,7 @@ loadLOL() {
         fi
       done 
       
-    fi
+  fi
 
 }
 
@@ -428,21 +459,32 @@ floot() {
   ;;
   
   *)
-    # generate a tmp file, as i have trouble atm to figure out
-    # why free space get lost when i generate the pixlist directly
-    # in ram
-    if [ $USECACHE ]
+    if [ $ANIMATION ]
     then
-	   checkfile $PIXLIST
-	   message "using cache from ${YELLOW}$PIXLIST${ENDCOLOR}"
-     LOL_org="$(< $PIXLIST)"
-    else
-	   checkfile $IMGFILE
-	   message "convertimg image file ${YELLOW}${IMGFILE}${ENDCOLOR}"
-	   LOL_org="$(convertimg)"
-     #convertimg > $PIXLIST
+      checkfile $IMGFILE
+      message "ANIMATION mode, checking if ${YELLOW}${IMGFILE}${ENDCOLOR} is an GIF"
+      if [ "$(file $IMGFILE |awk '{print $2}')" == "GIF" ]
+      then
+        LOLFIELDS="$(identify $IMGFILE | echo $(( $(wc -l) - 1 )) )"
+        message "splitting ${YELLOW}${IMGFILE}${ENDCOLOR} up into ${YELLOW}${LOLFIELDS}${ENDCOLOR} frame images"
+        convert -coalesce $IMGFILE ${ANIFILE}.png || error
+      else
+        message error "Other filetypes then ${YELLOW}GIF${ENDCOLOR} are not supported at the moment for ${YELLOW}ANIMATION${ENDCOLOR}"
+        exit 1
+      fi
+    else 
+      if [ $USECACHE ]
+      then
+       checkfile $PIXLIST
+       message "using cache from ${YELLOW}$PIXLIST${ENDCOLOR}"
+       LOL_org="$(< $PIXLIST)"
+      else
+       checkfile $IMGFILE
+       message "convertimg image file ${YELLOW}${IMGFILE}${ENDCOLOR}"
+       LOL_org="$(convertimg)"
+       #convertimg > $PIXLIST
+      fi
     fi
-      
     message "prepare worker ${YELLOW}$i${ENDCOLOR} .."
     #set -x 
     loadLOL
@@ -533,11 +575,14 @@ case $1 in
           ;;
         esac
         
-        if ! command -v convert > /dev/null
-        then
-          message error "${YELLOW}convert${ENDCOLOR} not found"
-          exit 1
-        fi
+        for imgmgckCMD in convert identify
+        do
+          if ! command -v $imgmgckCMD > /dev/null
+          then
+            message error "imagemagick ${YELLOW}${imgmgckCMD}${ENDCOLOR} not found"
+            exit 1
+          fi
+        done
         
         if [ $LARGE ] && [ $ANIMATION ]
         then
