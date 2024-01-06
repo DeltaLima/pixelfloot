@@ -26,8 +26,19 @@ pixelfloot was built during the 37c3. in its actual state, its just a mess. I ho
 - for drawing big areas, like 1280x720, use LARGE mode: `LARGE=true ./pixelfloot.sh floot images/xphg.jpg`
   - default field size are 64k lines. You can adjust it with LOLFIELDSIZE:
     `LOLFIELDSIZE=16000 LARGE=true ./pixelfloot.sh floot images/xphg.jpg`
-- drawing an gif file with proper animation: `LARGE=true ./pixelfloot.sh floot images/dancing_banana.gif`
-  - Adjust the speed with FRAMETICKTIME in seconds: `FRAMETICKTIME=0.03 LARGE=true ./pixelfloot.sh floot images/shaking_cat.gif`
+- drawing an gif file with proper animation: `ANIMATION=true ./pixelfloot.sh floot images/dancing_banana.gif`
+  - Adjust the speed with FRAMETICKTIME in seconds: `FRAMETICKTIME=0.03 ANIMATION=true ./pixelfloot.sh floot images/shaking_cat.gif`
+
+## tuning
+
+You can play around with some env vars to optimize your throughput. Most 
+obvious one is FLOOTFORKS whichs defines how many worker fors are 
+spawning / tcp sessions you use. Default is 1.
+
+When using more then one worker, it also worth to have a look to
+SYNCFLOOTWORKER. This env var (bool) defines if all worker calculate 
+their own OFFSET or use all the same from `[worker 1]`.
+
 
 ```shell
 $ ./pixelfloot.sh help

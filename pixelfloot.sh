@@ -24,7 +24,7 @@ SHUFMODE="$3"
 
 FLOOTSRUNNING=0
 
-test -z "$FLOOTFORKS" && FLOOTFORKS="2"
+test -z "$FLOOTFORKS" && FLOOTFORKS="1"
 
 test -z $X_MAX && X_MAX=800
 test -z $Y_MAX && Y_MAX=600
@@ -36,6 +36,8 @@ XDIR=0
 YDIR=0
 test -z "$BOUNCESTEP" && BOUNCESTEP=2
 ## end bounce
+
+OFFSET_SHM="/dev/shm/pxlflt-offset"
 
 ## ANIMATION
 # convert -coalesce animation.gif target.png -> produces target1.png, target2.png, ..
@@ -346,18 +348,30 @@ flootworker()
   
   while true
 	do
-    if [ $LARGE ] 
+    # set offset
+    if [ $SYNCFLOOTWORKER ]
     then
+      if [ $iFLOOTWORKER == 1 ]
+      then
+        xymode
+        echo "$OFFSET" > $OFFSET_SHM
+      fi
+      echo "$(<${OFFSET_SHM})"
+    else
       xymode
       echo "$OFFSET"
+    fi
+    
+    if [ $LARGE ] 
+    then
       for i in $(seq 0 $1 | shuf)
       do
         echo "${LOL[$i]}"     
       done
     elif [ $ANIMATION ]
     then
-      xymode
-      echo "$OFFSET"
+      #~ xymode
+      #~ echo "$OFFSET"
       echo "${LOL[$(<${FRAMETOPICK_SHM})]}"
       #~ i=0
       #~ while [ $i -le $1 ]
@@ -366,9 +380,7 @@ flootworker()
         #~ i=$(($i+1))
       #~ done
     else
-      xymode
-      echo "$OFFSET
-${LOL[$1]}"
+      echo "${LOL[$1]}"
     fi
 	done > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] transmission ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
 }
@@ -435,7 +447,7 @@ loadLOL() {
       do
         if [ -z "$ALPHACOLOR" ]
         then 
-          message "shuffle pixels for [worker ${YELLOW}${i}${ENDCOLOR}}"
+          message "shuffle pixels for [worker ${YELLOW}${i}${ENDCOLOR}]"
           LOL[$i]="$(echo "$LOL_org" | shuf)"
         else
           message "remove aplha color ${YELLOW}${ALPHACOLOR}${ENDCOLOR} and shuffle pixels for [worker ${YELLOW}${i}${ENDCOLOR}]"
@@ -541,6 +553,10 @@ floot() {
   
   
   message "starting ${YELLOW}${FLOOTFORKS}${ENDCOLOR} worker"
+  if [ -n "$SYNCFLOOTWORKER" ] && [ $FLOOTFORKS -gt 1 ]
+  then
+    message "SYNCFLOOTWORKER is enabled, all worker use OFFSET from [worker ${YELLOW}1${ENDCOLOR}]"
+  fi
   
   while true
   do
@@ -659,7 +675,7 @@ case $1 in
     echo "SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)"
     echo "BORDERCOLOR(hex), X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)"
     echo "RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int), LARGE(bool), LOLFIELDSIZE(int)"
-    echo "ANIMATION(bool), FRAMETICKTIME(float)"
+    echo "ANIMATION(bool), FRAMETICKTIME(float), SYNCFLOOTWORKER(bool)"
     
     exit 1
 		;;
