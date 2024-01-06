@@ -26,6 +26,8 @@ pixelfloot was built during the 37c3. in its actual state, its just a mess. I ho
 - for drawing big areas, like 1280x720, use LARGE mode: `LARGE=true ./pixelfloot.sh floot images/xphg.jpg`
   - default field size are 64k lines. You can adjust it with LOLFIELDSIZE:
     `LOLFIELDSIZE=16000 LARGE=true ./pixelfloot.sh floot images/xphg.jpg`
+- drawing an gif file with proper animation: `LARGE=true ./pixelfloot.sh floot images/dancing_banana.gif`
+  - Adjust the speed with FRAMETICKTIME in seconds: `FRAMETICKTIME=0.03 LARGE=true ./pixelfloot.sh floot images/shaking_cat.gif`
 
 ```shell
 $ ./pixelfloot.sh help
@@ -53,6 +55,7 @@ IPFLOOT(string), FLOOTPORT(int), USECACHE(bool), FLOOTFORKS(int)
 SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)
 BORDERCOLOR(hex), X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)
 RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int), LARGE(bool)
+ANIMATION(bool), FRAMETICKTIME(float)
 ```
 
 Running on my Ryzen 4700G with [wellenbrecher](https://github.com/bits0rcerer/wellenbrecher) 1280x720 and three workers,

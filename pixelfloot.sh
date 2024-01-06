@@ -646,6 +646,7 @@ case $1 in
     echo "SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)"
     echo "BORDERCOLOR(hex), X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)"
     echo "RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int), LARGE(bool), LOLFIELDSIZE(int)"
+    echo "ANIMATION(bool), FRAMETICKTIME(float)"
     
     exit 1
 		;;
