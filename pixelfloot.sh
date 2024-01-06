@@ -37,7 +37,20 @@ test -z "$BOUNCESTEP" && BOUNCESTEP=2
 # /dev/shm/foo to store frame counter
 # 
 # GifFileFormat - gif, jpg, png  || detect which fileformat IMGFILE is
-test -z "$ANIMATION" && ANIMATION="false"
+#test -z "$ANIMATION" && ANIMATION="false"
+# 
+# loadLOL loads every single frame into an array field WHEN ANIMATION is true
+# loadLOL sets No of frames in LOLFIELDS
+#
+# flootworker looks in while loop which value in /dev/shm/frametick is.
+# /dev/shm/frametick contains which frame from LOL to draw.
+# function frametick() gets started in background when ANIMATION is true
+# and gets started before the flootworker get started
+# frametick writes the no of frame to draw into /dev/shm/frametick
+# to not draw too fast, there is a sleep in frametick which waits for
+# FRAMETICKTIME seconds. Values are float, down to lowest value 0.001
+# Only one of ANIMATION or LARGE can be true, not both.
+FRAMETICK_SHM="/dev/shm/frametick"
 ## END ANIMATION
 
 
@@ -287,6 +300,16 @@ xymode() {
 
 }
 
+frametick() {
+  test -z "$FRAMETICKTIME" && FRAMETICKTIME=0.1
+  while true
+  do
+    echo lol
+    exit 1
+  done
+  
+}
+
 flootworker()
 {  
   while true
@@ -420,17 +443,23 @@ floot() {
      #convertimg > $PIXLIST
     fi
       
-      message "prepare worker ${YELLOW}$i${ENDCOLOR} .."
-      #set -x 
-      loadLOL
-      #set +x 
-      message "${GREEN}DONE!${ENDCOLOR}"
+    message "prepare worker ${YELLOW}$i${ENDCOLOR} .."
+    #set -x 
+    loadLOL
+    #set +x 
+    message "${GREEN}DONE!${ENDCOLOR}"
   ;;
   esac
 	
-  message "starting $FLOOTFORKS workers"
   
-
+  if [ $ANIMATION ]
+  then
+    frametick &
+  fi
+  
+  
+  message "starting ${YELLOW}${FLOOTFORKS}${ENDCOLOR} workers"
+  
   while true
   do
     for i in $(seq $FLOOTFORKS) 
@@ -439,7 +468,7 @@ floot() {
         if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
         then
           message "worker ${YELLOW}$i${ENDCOLOR} is not running, starting it"
-            if [ $LARGE ]
+            if [ $LARGE ] || [ $ANIMATION ]
             then
               flootworker $LOLFIELDS &
               LOLPID[$i]=$!
@@ -503,11 +532,19 @@ case $1 in
           
           ;;
         esac
+        
         if ! command -v convert > /dev/null
         then
           message error "${YELLOW}convert${ENDCOLOR} not found"
           exit 1
         fi
+        
+        if [ $LARGE ] && [ $ANIMATION ]
+        then
+          message error "${YELLOW}LARGE${ENDCOLOR} and ${YELLOW}ANIMATION${ENDCOLOR} cannot be used at the same time. Please use only one of them."
+          exit 1
+        fi
+        
         message "all requirements satisfied ${GREEN}:)${ENDCOLOR}"
         floot
 	;;
