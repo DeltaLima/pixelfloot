@@ -32,7 +32,19 @@ YDIR=0
 test -z "$BOUNCESTEP" && BOUNCESTEP=2
 ## end bounce
 
+## ANIMATION
+# convert -coalesce animation.gif target.png -> produces target1.png, target2.png, ..
+# /dev/shm/foo to store frame counter
+# 
+# GifFileFormat - gif, jpg, png  || detect which fileformat IMGFILE is
+test -z "$ANIMATION" && ANIMATION="false"
+## END ANIMATION
+
+
+## old crap
 declare -a PIXMAP
+## end old crap
+
 declare -a LOL
 declare -a LOLPID
 
@@ -225,10 +237,6 @@ convertimg() {
   convert $IMGFILE $BORDER $RESIZE txt:  | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /'
 }
 
-#~ generate_text() {
-  
-#~ }
-
 
 xymode() {
 	case $SHUFMODE in
@@ -276,18 +284,7 @@ xymode() {
         OFFSET="OFFSET $X $Y"
 	;;	
 	esac
-	#
-	#
-	#echo "OFFSET $(shuf -i 0-1760 -n 1) 919"
-	
-	#echo > /dev/null
-	
-	#~ echo "OFFSET $sx $sy"
-	#~ sx=$((sx+1))
-	#~ sy=$((sy+1))
-	
-	#~ test $sx -gt 1760 && sx=0
-	#~ test $sy -gt 920 && sy=0
+
 }
 
 flootworker()
@@ -344,10 +341,6 @@ loadLOL() {
             
             i=$(($i+1))
     done
-    #~ echo "${LOL[14]}"
-    #~ echo STOP
-    #~ read
-    
     
    else
     for i in $(seq 1 $FLOOTFORKS)
@@ -426,11 +419,6 @@ floot() {
 	   LOL_org="$(convertimg)"
      #convertimg > $PIXLIST
     fi
-
-		  #LOL[$i]="OFFSET 1 200"
-		  #LOL[$i]="OFFSET $(shuf -i 0-1760 -n 1) $(shuf -i 0-920 -n 1)"
-	#	  LOL[$i]="$(shuf_xy)"
-		  #LOL[$i]="$(cat $PIXLIST | shuf)"
       
       message "prepare worker ${YELLOW}$i${ENDCOLOR} .."
       #set -x 
@@ -451,8 +439,6 @@ floot() {
         if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
         then
           message "worker ${YELLOW}$i${ENDCOLOR} is not running, starting it"
-          #if [ "$FLOOTSRUNNING" -le "$FLOOTFORKS" ]
-          #then
             if [ $LARGE ]
             then
               flootworker $LOLFIELDS &
@@ -460,9 +446,7 @@ floot() {
             else
               flootworker $i &
               LOLPID[$i]=$!
-            fi
-          #fi
-          
+            fi          
         fi
     done
   done
@@ -493,11 +477,8 @@ case $1 in
 	;;
 		
 	floot) message "flooting ${YELLOW}${IPFLOOT}:${FLOOTPORT}${ENDCOLOR}"
-		#~ if [ "$SHUFMODE" == "static" ] && ([ -z "$X" ] && [ -z "$Y" ])
-         #~ then
-           #~ echo "please specify coords with e.g. 'W=420 H=420 SHUFMODE=static $0 floot $FNAME" >&2
-           #~ exit 1
-         #~ fi
+
+         ##~ WIP - get the size of the board from server
          #~ message "request board size from ${YELLOW}${IPFLOOT}:${FLOOTPORT}${ENDCOLOR}"
          #~ exec 5<>/dev/tcp/$IPFLOOT/$FLOOTPORT
          #~ echo "SIZE" >&5
@@ -508,6 +489,8 @@ case $1 in
          
          #~ exec 5<&-
          #~ message "$BOARSIZE"
+         ##~ END WIP
+         
          case $SHUFMODE in 
          cursor)
           if ! command -v xdotool > /dev/null
