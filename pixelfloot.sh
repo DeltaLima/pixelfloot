@@ -259,12 +259,6 @@ convertimg() {
     CONVERTFILE="$1"
   fi
   
-  if [ -n "$RESIZE" ]
-  then
-    RESIZE="-resize $RESIZE"
-    
-  fi
-  
   convert $CONVERTFILE $BORDER $RESIZE txt:  | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /'
 }
 
@@ -448,6 +442,11 @@ floot() {
   else
     BORDER=""
   fi
+  if [ -n "$RESIZE" ]
+  then
+    message "resizing to $RESIZE px"
+    RESIZE="-resize $RESIZE"
+  fi
   
   case $FNAME in
   # small stupid animation, two alternating images
@@ -487,6 +486,7 @@ floot() {
   ;;
   
   *)
+    
     if [ $ANIMATION ]
     then
       checkfile $IMGFILE
