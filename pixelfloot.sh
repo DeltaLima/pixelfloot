@@ -332,6 +332,18 @@ frametick() {
 
 flootworker()
 {  
+  if [ $ANIMATION ] && [ $iFLOOTWORKER -gt 1 ]
+  then
+    message "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] shuffle pixels again to maximize coverage" >&2
+    i=0
+    while  [ $i -lt $LOLFIELDS ]
+    do
+      LOL[$i]="$(echo "${LOL[$i]}" | shuf)"
+      i=$(($i+1))
+    done
+    message "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] shuffle ${GREEN}done${ENDCOLOR}" >&2
+  fi
+  
   while true
 	do
     if [ $LARGE ] 
@@ -358,7 +370,7 @@ flootworker()
       echo "$OFFSET
 ${LOL[$1]}"
     fi
-	done > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "transmission in worker ${YELLOW}$1${ENDCOLOR} ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
+	done > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] transmission ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
 }
 
 checkfile() {
@@ -423,10 +435,10 @@ loadLOL() {
       do
         if [ -z "$ALPHACOLOR" ]
         then 
-          message "shuffle pixels for worker ${YELLOW}${i}${ENDCOLOR}"
+          message "shuffle pixels for [worker ${YELLOW}${i}${ENDCOLOR}}"
           LOL[$i]="$(echo "$LOL_org" | shuf)"
         else
-          message "remove aplha color ${YELLOW}${ALPHACOLOR}${ENDCOLOR} and shuffle pixels for worker ${YELLOW}${i}${ENDCOLOR}"
+          message "remove aplha color ${YELLOW}${ALPHACOLOR}${ENDCOLOR} and shuffle pixels for [worker ${YELLOW}${i}${ENDCOLOR}]"
           LOL[$i]="$(echo "$LOL_org" | grep -v $ALPHACOLOR | shuf)"
         fi
       done 
@@ -459,7 +471,7 @@ floot() {
   ;;
   
   fill)
-    message "generating color field with ${YELLOW}${FLOOTFORKS}${ENDCOLOR} workers"
+    message "generating color field with ${YELLOW}${FLOOTFORKS}${ENDCOLOR} worker"
     LOL_org="$(gen_field)"
 		loadLOL
   ;;
@@ -478,7 +490,7 @@ floot() {
     
 
     #convert -fill lightgreen  -background white -pointsize 40 caption:"KARTTUR" -quality 72  DstImage.png
-    message "generating text, size $FONTSIZE for ${YELLOW}$FLOOTFORKS${ENDCOLOR} workers"
+    message "generating text, size $FONTSIZE for ${YELLOW}$FLOOTFORKS${ENDCOLOR} worker"
     message "TEXT: ${YELLOW}${TEXT}${ENDCOLOR}"
     LOL_org="$(convert ${SIZE} ${BORDER} +antialias -depth 8 -fill \#${COLOR}  -background \#${BGCOLOR} -pointsize ${FONTSIZE} caption:"${TEXT}" -quality 72  txt: | tail -n +2  | awk '{print $1 $3}' | sed -e 's/\,/ /' -e 's/\:/ /' -e 's/\#//' -e 's/^/PX /')"
     
@@ -517,7 +529,7 @@ floot() {
     #set -x 
     loadLOL
     #set +x 
-    message "${GREEN}DONE!${ENDCOLOR}"
+    message "${GREEN}Done!${ENDCOLOR}"
   ;;
   esac
 	
@@ -528,23 +540,24 @@ floot() {
   fi
   
   
-  message "starting ${YELLOW}${FLOOTFORKS}${ENDCOLOR} workers"
+  message "starting ${YELLOW}${FLOOTFORKS}${ENDCOLOR} worker"
   
   while true
   do
-    for i in $(seq $FLOOTFORKS) 
+    for iFLOOTWORKER in $(seq $FLOOTFORKS) 
       do
         #echo "check worker $i PID ${LOLPID[$i]} if running "
-        if [ -z ${LOLPID[$i]} ] || ! ps -p ${LOLPID[$i]} > /dev/null
+        if [ -z ${LOLPID[$iFLOOTWORKER]} ] || ! ps -p ${LOLPID[$iFLOOTWORKER]} > /dev/null
         then
-          message "worker ${YELLOW}$i${ENDCOLOR} is not running, starting it"
+          message "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] not running, starting it"
             if [ $LARGE ] || [ $ANIMATION ]
             then
               flootworker $LOLFIELDS &
-              LOLPID[$i]=$!
+              LOLPID[$iFLOOTWORKER]=$!
+              message "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] PID ${YELLOW}${LOLPID[$iFLOOTWORKER]}${ENDCOLOR} ${GREEN}started${ENDCOLOR}"
             else
-              flootworker $i &
-              LOLPID[$i]=$!
+              flootworker $iFLOOTWORKER &
+              LOLPID[$iFLOOTWORKER]=$!
             fi          
         fi
     done
