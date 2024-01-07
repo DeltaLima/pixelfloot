@@ -28,6 +28,9 @@ pixelfloot was built during the 37c3. in its actual state, its just a mess. I ho
     `LOLFIELDSIZE=16000 LARGE=true ./pixelfloot.sh floot images/xphg.jpg`
 - drawing an gif file with proper animation: `ANIMATION=true ./pixelfloot.sh floot images/dancing_banana.gif`
   - Adjust the speed with FRAMETICKTIME in seconds: `FRAMETICKTIME=0.03 ANIMATION=true ./pixelfloot.sh floot images/shaking_cat.gif`
+- with THROTTLE you can adjust your transfer speed: `THROTTLE=4M ANIMATION=true ./pixelfloot.sh floot images/Animated-GIFs-davidope-11.gif`
+  - you can use K, M, G as suffix.
+- view the network io of the worker with PIPEVIEW: `PIPEVIEW=true ANIMATION=true ./pixelfloot.sh floot images/Tesseract2.gif`
 
 ## tuning
 
@@ -38,6 +41,10 @@ spawning / tcp sessions you use. Default is 1.
 When using more then one worker, it also worth to have a look to
 SYNCFLOOTWORKER. This env var (bool) defines if all worker calculate 
 their own OFFSET or use all the same from `[worker 1]`.
+
+You can use PIPEVIEW to see how much bandwith a worker uses. With
+THROTTLE you can limit the bandwith. Value given in bytes, you can use 
+K, M, G as suffix.
 
 
 ```shell

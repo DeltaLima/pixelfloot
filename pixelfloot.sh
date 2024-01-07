@@ -16,8 +16,6 @@ FNAME="${2%.*}"
 # remove everything before the slash, so we get the filename without
 # path and extension
 FNAME="${FNAME##*/}"
-PPMFILE="$FNAME.ppm"
-HEXPPM="images/$FNAME.hexppm"
 PIXLIST="/tmp/$FNAME.pixlist"
 ANIFILE="/tmp/$FNAME"
 SHUFMODE="$3"
@@ -60,17 +58,12 @@ OFFSET_SHM="/dev/shm/pxlflt-offset-${FNAME}"
 FRAMETOPICK_SHM="/dev/shm/pxlflt-frametopick-${FNAME}"
 ## END ANIMATION
 
-
-## old crap
-declare -a PIXMAP
-## end old crap
-
 declare -a LOL
 declare -a LOLPID
 
 ## TODOS
 # 
-# - Put OFFSET into /dev/shm/ so each worker do not have to count OFFSET
+# DONE - Put OFFSET into /dev/shm/ so each worker do not have to count OFFSET
 #   for itself and we prevent worker from drifting apart when drawing. 
 # - get dimensions of pic with "identify" (imagemagick part)
 # - get dimensions of the pixelflut board 
@@ -110,131 +103,6 @@ error ()
   message error "${RED}ERROR!!${ENDCOLOR}"
   exit 1
 }
-
-
-######  OLDFOOO ######
-# https://gist.github.com/nberlette/e3e303a81f2c41927bf4fe90fb89d97f
-function hex() {
-    printf "%02X%02X%02X" ${*//','/' '}
-}
-
-gen_pixmap() {
-	y=0
-	while read -r LINE
-	do
-		if [ "$y" -gt 2 ]
-		then
-			for x in $(seq 1 $x_ppm)
-			do
-				REDindex=$((x*3-2))
-				GREENindex=$((x*3+1-2))
-				BLUEindex=$((x*3+2-2))
-				
-				REDvalue="$(echo $LINE| cut -d ' ' -f${REDindex})"
-				GREENvalue="$(echo $LINE| cut -d ' ' -f${GREENindex})"
-				BLUEvalue="$(echo $LINE| cut -d ' ' -f${BLUEindex})"
-				
-				PIXELcolor="$(hex ${REDvalue} $GREENvalue $BLUEvalue)"
-				PIXMAP[$y]="${PIXMAP[$y]} $PIXELcolor"
-				
-			done
-			echo "please wait"
-			echo ${PIXMAP[$y]} >> $HEXPPM
-		elif [ "$y" -eq 1 ]
-			then
-			x_ppm="$(echo "$LINE"|cut -d ' ' -f1)"
-		fi
-		y=$((y+1)) 
-		#~ for col in $LINE
-		#~ do
-			#~ case $count in
-			#~ 0) RED="$(hex $col)"
-			#~ ;;
-			#~ 1) GREEN="$(hex $col)"
-			#~ ;;
-			#~ 2) BLUE="$(hex $col)"
-			#~ ;;
-			#~ esac
-			#~ count=$((count+1))
-			#~ test $count -ge 2 && count=0
-		#~ done
-	done < "$PPMFILE"
-	
-}
-
-draw_pixmap() {
-	y=1
-	test -z $x_ppm && echo "x_ppm missing" && exit 1
-	while read -r LINE
-	do
-		for x in $(seq 1 $x_ppm)
-		do
-			# when Color is FF00FE draw rainbow background
-			if [[ "$(echo $LINE | cut -d ' ' -f$x)" != "FF00FE" ]]
-			then
-				echo "please wait"
-				echo "PX $x $y $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
-
-				# magnify double size
-				#echo "PX $((x*2)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
-				#echo "PX $((x*2+1)) $((y*2)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
-				#echo "PX $((x*2)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST
-				#echo "PX $((x*2+1)) $((y*2+1)) $(echo $LINE | cut -d ' ' -f$x)" >> $PIXLIST			
-			else
-				
-				if [ "$y" -lt 32 ]
-				then
-					RAINBOWCOLOR="$(hex 0 0 255)"
-				elif [ "$y" -lt 64 ]
-				then
-					RAINBOWCOLOR="$(hex 0 255 255)"
-				elif [ "$y" -lt 94 ]
-				then
-					RAINBOWCOLOR="$(hex 0 255 0)"
-				elif [ "$y" -lt 126 ]
-				then
-					RAINBOWCOLOR="$(hex 255 255 0)"
-				else
-					RAINBOWCOLOR="$(hex 255 0 0)"
-				
-				fi
-				
-				 
-								
-				#~ if [ "$y" -lt 16 ]
-				#~ then
-					#~ RAINBOWCOLOR="$(hex 0 0 $(((y+1)*16)))"
-				#~ elif [ "$y" -lt 32 ]
-				#~ then
-					#~ RAINBOWCOLOR="$(hex 0 $(((y-16)*16)) 255)"
-				#~ elif [ "$y" -lt 48 ]
-				#~ then
-					#~ RAINBOWCOLOR="$(hex 0 $((y*16)) $((16-(y-32)*16)))"
-				#~ elif [ "$y" -lt 64 ]
-				#~ then
-					#~ RAINBOWCOLOR="$(hex $((y*16)) $((y*16)) 0)"
-				#~ else
-					#~ RAINBOWCOLOR="$(hex $((y*16)) 0 0)"
-				
-				#~ fi
-			    
-			
-				echo "please wait for rainbow"
-				echo "PX $((x*2)) $((y*2)) $RAINBOWCOLOR" >> $PIXLIST
-				echo "PX $((x*2+1)) $((y*2)) $RAINBOWCOLOR" >> $PIXLIST
-				echo "PX $((x*2)) $((y*2+1)) $RAINBOWCOLOR" >> $PIXLIST
-				echo "PX $((x*2+1)) $((y*2+1)) $RAINBOWCOLOR" >> $PIXLIST			
-			fi
-		done
-		y=$((y+1)) 
-
-	done < "$HEXPPM"
-	
-}
-
-
-###### END OLDFOOO ######
-
 
 gen_field() {
 
@@ -332,6 +200,23 @@ frametick() {
   
 }
 
+pipectrl() {
+
+  
+  if [ $THROTTLE ]
+  then
+    pv $(test -z $PIPEVIEW && echo "-q") -c -N "[worker ${iFLOOTWORKER}]" -L "$THROTTLE" || return 1
+  else
+    if [ $PIPEVIEW ]
+    then
+      pv -c -N "[worker ${iFLOOTWORKER}]" || return 1
+    else
+      cat - || return 1
+    fi
+  fi
+  
+}
+
 flootworker()
 {  
   if [ $ANIMATION ] && [ $iFLOOTWORKER -gt 1 ]
@@ -354,9 +239,23 @@ flootworker()
       if [ $iFLOOTWORKER == 1 ]
       then
         xymode
-        echo "$OFFSET" > $OFFSET_SHM
+        echo "$OFFSET" | tee $OFFSET_SHM
+        
+      else
+        
+        test -f $OFFSET_SHM && OFFSET="$(<${OFFSET_SHM})"
+        # little hack, otherwise on fast machines with small images we
+        # get an empty string back. 
+        while [ "$(echo $OFFSET | wc -c )" -lt 10 ]
+        do
+          test $VERBOSE && message warn "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] [${RED}VERBOSE${ENDCOLOR}] TOO FAST, cannot fetch OFFSET! I got '${YELLOW}${OFFSET}${ENDCOLOR}' from ${YELLOW}${OFFSET_SHM}${ENDCOLOR}" >&2
+          OFFSET="$(<${OFFSET_SHM})"
+        done
+
+        echo "$OFFSET"
+        
       fi
-      echo "$(<${OFFSET_SHM})"
+
     else
       xymode
       echo "$OFFSET"
@@ -370,19 +269,16 @@ flootworker()
       done
     elif [ $ANIMATION ]
     then
-      #~ xymode
-      #~ echo "$OFFSET"
+
       echo "${LOL[$(< ${FRAMETOPICK_SHM})]}"
-      #~ i=0
-      #~ while [ $i -le $1 ]
-      #~ do
-        #~ echo "${LOL[$i]}"
-        #~ i=$(($i+1))
-      #~ done
+
     else
       echo "${LOL[$1]}"
     fi
-	done > /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "[worker ${YELLOW}${iFLOOTWORKER}${ENDCOLOR}] transmission ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
+	done | pipectrl >  /dev/tcp/$IPFLOOT/$FLOOTPORT || message warn "[worker ${YELLOW}${iFLOOTWORKER}${ENDCOLOR}] transmission ${RED}failed${ENDCOLOR} - maybe you need to decrease ${YELLOW}FLOOTFORKS${ENDCOLOR} or expand/tune your uplink"
+  #~ echo  "${LOL[$(< ${FRAMETOPICK_SHM})]}" > /dev/shm/lol123_${i}
+  #~ echo  "${OFFSET}" > /dev/shm/lol123.offset_${i}
+  #~ read
 }
 
 checkfile() {
@@ -473,15 +369,6 @@ floot() {
   fi
   
   case $FNAME in
-  # small stupid animation, two alternating images
-  winketuxS) 
-    message "drawing winketuxS animation"
-		LOL[1]="$(cat pixlists/${FNAME}1.pixlist | shuf)"
-		LOL[2]="$(cat pixlists/${FNAME}2.pixlist | shuf )"
-		LOL[3]="$(cat pixlists/${FNAME}2.pixlist | shuf )"
-		#LOL[3]="$(cat $FNAME-mc.pixlist.2 | shuf)"
-  ;;
-  
   fill)
     message "generating color field with ${YELLOW}${FLOOTFORKS}${ENDCOLOR} worker"
     LOL_org="$(gen_field)"
@@ -562,7 +449,6 @@ floot() {
   do
     for iFLOOTWORKER in $(seq $FLOOTFORKS) 
       do
-        #echo "check worker $i PID ${LOLPID[$i]} if running "
         if [ -z ${LOLPID[$iFLOOTWORKER]} ] || ! ps -p ${LOLPID[$iFLOOTWORKER]} > /dev/null
         then
           message "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] not running, starting it"
@@ -583,21 +469,7 @@ floot() {
 
 case $1 in
 
-### DEPRECATED - JUST FOR TESTING
-	draw_pixmap) draw_pixmap
-	;;
-	
-	gen_pixmap) gen_pixmap
-	;;
-### END DEPRECATED - JUST FOR TESTING
-
 	convertimg)
-    # old way
-		##gen_pixmap
-		##draw_pixmap
-    
-    # convert arbeitsplatz.jpg txt: | tail -n +2  | awk '{print $1 $3}'
-    # this is probably better
     checkfile $IMGFILE
     message "generating pixlist cachefile from ${YELLOW}${IMGFILE}${ENDCOLOR}"
     convertimg > $PIXLIST
@@ -623,7 +495,7 @@ case $1 in
          cursor)
           if ! command -v xdotool > /dev/null
           then
-          message error "${YELLOW}xdotool${ENDCOLOR} not found" 
+          message error "command ${YELLOW}xdotool${ENDCOLOR} not found" 
           exit 1
           fi
           ;;
@@ -636,11 +508,19 @@ case $1 in
         do
           if ! command -v $imgmgckCMD > /dev/null
           then
-            message error "imagemagick ${YELLOW}${imgmgckCMD}${ENDCOLOR} not found"
+            message error "imagemagick command ${YELLOW}${imgmgckCMD}${ENDCOLOR} not found"
             exit 1
           fi
         done
         
+        if [ $PIPEVIEW ] || [ $THROTTLE ]
+        then
+          if ! command -v pv > /dev/null
+          then
+            message error "command ${YELLOW}pv${ENDCOLOR} not found"
+            exit 1
+          fi
+        fi
         if [ $LARGE ] && [ $ANIMATION ]
         then
           message error "${YELLOW}LARGE${ENDCOLOR} and ${YELLOW}ANIMATION${ENDCOLOR} cannot be used at the same time. Please use only one of them."
@@ -675,7 +555,8 @@ case $1 in
     echo "SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)"
     echo "BORDERCOLOR(hex), X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)"
     echo "RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int), LARGE(bool), LOLFIELDSIZE(int)"
-    echo "ANIMATION(bool), FRAMETICKTIME(float), SYNCFLOOTWORKER(bool)"
+    echo "ANIMATION(bool), FRAMETICKTIME(float), SYNCFLOOTWORKER(bool), THROTTLE(string)"
+    echo "PIPEVIEW(bool), VERBOSE(bool)"
     
     exit 1
 		;;
