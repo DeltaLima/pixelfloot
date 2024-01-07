@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # pixelfloot - a pixelflut client written in bash
-# this script was made during the 37c3
+# work on this script started at 37c3
 
 # pixelflut.la10cy.net - 130.185.104.31
 # my small pixelflut test server, feel free to have fun with it! :)
