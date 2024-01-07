@@ -72,8 +72,9 @@ available env vars to configure:
 IPFLOOT(string), FLOOTPORT(int), USECACHE(bool), FLOOTFORKS(int)
 SIZE(int), TEXT(string), FONTSIZE(int), BGCOLOR(hex), COLOR(hex)
 BORDERCOLOR(hex), X(int), Y(int), X_MAX(int), Y_MAX(int), H(int), W(int)
-RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int), LARGE(bool)
-ANIMATION(bool), FRAMETICKTIME(float)
+RESIZE(int), ALPHACOLOR(hex), BOUNCESTEP(int), LARGE(bool), LOLFIELDSIZE(int)
+ANIMATION(bool), FRAMETICKTIME(float), SYNCFLOOTWORKER(bool), THROTTLE(string)
+PIPEVIEW(bool), VERBOSE(bool)
 ```
 
 Running on my Ryzen 4700G with [wellenbrecher](https://github.com/bits0rcerer/wellenbrecher) 1280x720 and three workers,
