@@ -455,12 +455,12 @@ floot() {
             if [ $LARGE ] || [ $ANIMATION ]
             then
               flootworker $LOLFIELDS &
-              LOLPID[$iFLOOTWORKER]=$!
-              message "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] PID ${YELLOW}${LOLPID[$iFLOOTWORKER]}${ENDCOLOR} ${GREEN}started${ENDCOLOR}"
+              LOLPID[$iFLOOTWORKER]=$!              
             else
               flootworker $iFLOOTWORKER &
               LOLPID[$iFLOOTWORKER]=$!
-            fi          
+            fi
+          message "[worker ${YELLOW}$iFLOOTWORKER${ENDCOLOR}] PID ${YELLOW}${LOLPID[$iFLOOTWORKER]}${ENDCOLOR} ${GREEN}started${ENDCOLOR}"
         fi
     done
   done
