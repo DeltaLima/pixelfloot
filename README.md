@@ -1,9 +1,9 @@
-# pixelfloot
+# ./pixelfloot
 
 Origin: https://git.la10cy.net/DeltaLima/pixelfloot
 
 an very simple and dirty pixelflut client to draw images, written in bash.
-pixelfloot was built during the 37c3. in its actual state, its just a mess. I hope i will find time to put it in a more usable and readable format. 
+./pixelfloot.sh was built during the 37c3. in its actual state, its just a mess. I hope i will find time to put it in a more usable and readable format. 
 
 ## examples
 
@@ -80,7 +80,7 @@ PIPEVIEW(bool), VERBOSE(bool)
 Running on my Ryzen 4700G with [wellenbrecher](https://github.com/bits0rcerer/wellenbrecher) 1280x720 and three workers,
 i get around 1,5Gbit/s localhost traffic.
 
-![pixelfloot screenshot](demo/screenshot_pixelfloot.png)
+![./pixelfloot screenshot](demo/screenshot_pixelfloot.png)
 
 ## try it out
 

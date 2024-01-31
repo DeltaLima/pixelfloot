@@ -297,7 +297,13 @@ loadLOL() {
   # max 64k each one
   if [ $LARGE ] 
   then
-    LOL_org="$(echo "$LOL_org" | shuf)"
+    if [ -z "$ALPHACOLOR" ]
+    then
+      LOL_org="$(echo "$LOL_org" | shuf)"
+    else
+      LOL_org="$(echo "$LOL_org" | grep -v ${ALPHACOLOR^^} | shuf)"
+    fi
+    
     test -z "$LOLFIELDSIZE" && LOLFIELDSIZE=64000
     # line counter
     L=1    
@@ -327,8 +333,8 @@ loadLOL() {
         message "load and shuffle pixels for frame ${YELLOW}$((${i}+1))/${LOLFIELDS}${ENDCOLOR}"
         LOL[$i]="$(convertimg ${ANIFILE}-${i}.png | shuf)"
       else
-        message "load and shuffle pixels for frame ${YELLOW}$((${i}+1))/${LOLFIELDS}${ENDCOLOR}, remove aplha color ${YELLOW}${ALPHACOLOR}${ENDCOLOR}"
-        LOL[$i]="$(convertimg ${ANIFILE}-${i}.png | grep -v $ALPHACOLOR | shuf)"
+        message "load and shuffle pixels for frame ${YELLOW}$((${i}+1))/${LOLFIELDS}${ENDCOLOR}, remove aplha color ${YELLOW}${ALPHACOLOR^^}${ENDCOLOR}"
+        LOL[$i]="$(convertimg ${ANIFILE}-${i}.png | grep -v ${ALPHACOLOR^^} | shuf)"
       fi
 
       #echo "${LOL[$i]}" | head
@@ -346,8 +352,8 @@ loadLOL() {
           message "shuffle pixels for [worker ${YELLOW}${i}${ENDCOLOR}]"
           LOL[$i]="$(echo "$LOL_org" | shuf)"
         else
-          message "remove aplha color ${YELLOW}${ALPHACOLOR}${ENDCOLOR} and shuffle pixels for [worker ${YELLOW}${i}${ENDCOLOR}]"
-          LOL[$i]="$(echo "$LOL_org" | grep -v $ALPHACOLOR | shuf)"
+          message "remove aplha color ${YELLOW}${ALPHACOLOR^^}${ENDCOLOR} and shuffle pixels for [worker ${YELLOW}${i}${ENDCOLOR}]"
+          LOL[$i]="$(echo "$LOL_org" | grep -v ${ALPHACOLOR^^} | shuf)"
         fi
       done 
       
