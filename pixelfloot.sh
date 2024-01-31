@@ -301,6 +301,7 @@ loadLOL() {
     then
       LOL_org="$(echo "$LOL_org" | shuf)"
     else
+      message "remove aplha color ${YELLOW}${ALPHACOLOR^^}${ENDCOLOR}"
       LOL_org="$(echo "$LOL_org" | grep -v ${ALPHACOLOR^^} | shuf)"
     fi
     
